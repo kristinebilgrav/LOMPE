@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH -A sens2017106
+#SBATCH -A sens2020021
 #SBATCH -p core
 #SBATCH -n 2
 #SBATCH -t 7-00:00:00
