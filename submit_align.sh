@@ -14,7 +14,7 @@ module load canu
 #pacbio : -x map-pb
 #ont: map-ont
 
-minimap2 -R '@RG\tID:foo\tSM:bar' -a -t 16 --MD -x map-ont /sw/data/reference/Homo_sapiens/g1k_v37/downloads/human_g1k_v37.fasta.gz $1/* | samtools view -Sbh - | samtools sort -m 4G -@16 - > $2
+minimap2 -R '@RG\tID:foo\tSM:bar' -a -t 16 --MD -x map-ont /sw/data/reference/Homo_sapiens/g1k_v37/downloads/human_g1k_v37.fasta.gz $1/* | samtools $2
 samtools index $2
 
 PTH=/proj/sens2020021/ONT/LRpipe
