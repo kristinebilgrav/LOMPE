@@ -5,7 +5,7 @@ call SVs using sniffles
 */
 
 process sniff {
-    publishDir params.outdir, mode:'copy'
+    publishDir params.output, mode:'copy'
 
     beforeScript 'module load bioinfo-tools Sniffles'
 
@@ -13,7 +13,7 @@ process sniff {
     path(bam)
 
     output:
-    path "${bam.baseName}.sniffles.vcf"
+    path "${bam.baseName}.sniffles.vcf", emit: sniff_vcf
 
     shell:
     """

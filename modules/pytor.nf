@@ -5,7 +5,7 @@ call CNVs using pytor
 */
 
 process pytor {
-    publishDir params.outdir, mode:'copy'
+    publishDir params.output, mode:'copy'
 
     beforeScript 'module load bioinfo-tools bcftools'
     

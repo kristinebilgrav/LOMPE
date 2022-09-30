@@ -5,14 +5,14 @@ annotate SV calls from sniffles
 */
 
 process run_vep {
-  publishDir params.outdir, mode: 'copy'
+  publishDir params.output, mode: 'copy'
   beforeScript 'module load bioinfo-tools vep'
 
   cpus 4
   time '1h'
 
   input:
-  path()
+  path(sniff_vcf)
 
   output:
   path "${bam.baseName}.VEP.vcf", emit: annotated_vcf

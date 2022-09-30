@@ -5,7 +5,7 @@ fastQC
 */
 
 process fastqc {
-    publishDir params.outdir, mode: 'copy'
+    publishDir params.output, mode: 'copy'
 
     cpus 16
     time '2h'

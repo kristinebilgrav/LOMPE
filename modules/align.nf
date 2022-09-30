@@ -5,7 +5,7 @@ alignment of fastq files using minimap2
 */
 
 process align {
-    publishDir params.outdir, mode:'copy'
+    publishDir params.output, mode:'copy'
 
     cpus 16
     time '4h'

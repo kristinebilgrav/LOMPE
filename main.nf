@@ -11,8 +11,9 @@ log.info """\
 Long-read pipeline
 ------------------
 config: ${params.config}
-sample(s) : ${params.bam}
-outdir :  ${params.outdir}
+folder(s) : ${params.folder}
+sample_id : ${params.sample_id}
+output :  ${params.output}
 
 """
 

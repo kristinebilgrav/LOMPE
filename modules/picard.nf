@@ -5,7 +5,7 @@ picard
 */
 
 process picard {
-    publishDir params.outdir, mode:'copy'
+    publishDir params.output, mode:'copy'
 
     input:
     path(bam)
