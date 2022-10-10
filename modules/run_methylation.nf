@@ -13,7 +13,7 @@ process meth_find {
     path(methyl_chrs)
 
     output:
-    path 
+    path "${methyl_chrs.baseName}.fastQC.out/*"
 
     script:
     """
