@@ -12,6 +12,7 @@ process pytor {
 
     input:
     path(bam)
+    path(bai)
     path(snvfile)
 
     output:

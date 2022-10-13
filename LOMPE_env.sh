@@ -1,5 +1,6 @@
-module load bioinfo-tools samtools minimap2 samtools canu Nextflow bcftools picard FastQC
+module load bioinfo-tools samtools minimap2 Nextflow bcftools picard FastQC hdf5
 
-export NXF_LAUNCHER=/castor/project/proj_nobackup/wharf/kbilgrav/kbilgrav-sens2020021/FindTroll_nextflow/nextflow_tmp
-export NXF_TEMP=/castor/project/proj_nobackup/wharf/kbilgrav/kbilgrav-sens2020021/FindTroll_nextflow/nextflow_tmp
+export NXF_HOME=$PATH
+export NXF_LAUNCHER=$PATH/nextflow_tmp
+export NXF_TEMP=$PATH/nextflow_tmp
 

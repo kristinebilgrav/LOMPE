@@ -15,6 +15,6 @@ process picard {
     
     shell:
     """
-    java -jar $PICARD_ROOT/picard.jar CollectWgsMetrics --INPUT ${bam} --OUTPUT ${bam.baseName}.wgsmetrics.txt --REFERENCE_SEQUENCE ${params.ref} --COUNT_UNPAIRED true --MINIMUM_BASE_QUALITY 1 --VALIDATION_STRINGENCY SILENT
+    java -jar \$PICARD_ROOT/picard.jar CollectWgsMetrics --INPUT ${bam} --OUTPUT ${bam.baseName}.wgsmetrics.txt --REFERENCE_SEQUENCE ${params.ref} --COUNT_UNPAIRED true --MINIMUM_BASE_QUALITY 1 --VALIDATION_STRINGENCY SILENT
     """
 }

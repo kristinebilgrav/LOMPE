@@ -18,8 +18,8 @@ process fastqc {
 
     script:
     """
-    zcat ${bam} | head -5000000 > ${bam.baseName}.fastq
-    mkdir ${bam.baseName}.fastQC.out
+    zcat ${bam} | head -5000000 > ${bam.baseName}.fastq && \
+    mkdir ${bam.baseName}.fastQC.out && \    
     fastqc --threads 16 -o ${bam.baseName}.fastQC.out ${bam.baseName}.fastq
     """
 }
