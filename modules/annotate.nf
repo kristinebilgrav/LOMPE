@@ -12,14 +12,14 @@ process run_vep {
   time '1h'
 
   input:
-  path(sniff_vcf)
+  path(queried)
 
   output:
-  path "${bam.baseName}.VEP.vcf", emit: annotated_vcf
+  path "${queried.baseName}.VEP.vcf", emit: annotated_vcf
 
   shell:
   """
-  ${params.vep_path} -i ${} -o ${bam.baseName}.VEP.vcf ${params.vep_args} 
+  ${params.vep_path} -i ${queried} -o ${queried.baseName}.VEP.vcf ${params.vep_args} 
   """
 
 }

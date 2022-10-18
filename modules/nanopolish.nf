@@ -19,7 +19,7 @@ process index {
     """
     zcat fastq_pass/* > fastq
     gzip fastq
-    nanopolish index -d /fast5_pass/ ${fastq}
+    nanopolish index -d ${fast5}/ ${fastq}
     """
 }
 
@@ -32,8 +32,9 @@ process meth_polish {
     time '42h'
 
     input:
-    path(bam)
     path(fastq)
+    path(bam)
+    path(bai)
 
     output:
     path "${bam.baseName}.methylation.vcf", emit: methylation_tsv

@@ -26,6 +26,10 @@ include {align} from './modules/align'
 if (params.style == 'ont') {
     include { index ; meth_polish } from './modules/nanopolish'
     include { meth_find } from './modules/run_methylation'
+    include { combine_ont } from './modules/combine'
+}
+else {
+    include { combine_pb } from './modules/combine'
 }
 
 include { sniff } from './modules/sniffles'
@@ -34,12 +38,13 @@ include { bcf_snv } from './modules/bcftools'
 include { pytor } from './modules/pytor'
 include { picard } from './modules/picard'
 include { fastqc } from './modules/fastqc'
-include {combine } from './modules/combine'
+
 
 //workflows
 workflow call {
     fastq = Channel.fromPath("${params.folder}/*fastq.gz")
     align(fastq)
+
     bam = Channel.fromPath(fastq.out.bamfile)
     bai = Channel.fromPath(fastq.out.baifile)
 
@@ -48,50 +53,50 @@ workflow call {
     pytor(bam, bcf_snv.out.snvfile)
 
     picard(bam)
-    
-    run_vep(sniff.out)
     fastqc(bam)
 
 }
 
-workflow pb {
-    
-}
+
 
 //methylation wf:
-workflow meth {
+workflow ont {
 
-    fastq = Channel.fromPath("${params.folder}")
+    fastq = Channel.fromPath("${params.fastq_folder}")
+    fast5= Channel.fromPath("${params.fast5_folder}")
+    meth_polish(fastq, fast5)
+
     bam = Channel.fromPath(fastq.out.bamfile)
     bai = Channel.fromPath(fastq.out.baifile)
-    meth_polish(fastq, bam)
-    meth_find(meth_polish.out)
+    meth_find(meth_polish.out, bam, bai )
 
-    combine(run_vep.out, pytor.out, meth_find.out)
+    combine_ont(sniff.out, pytor.out, meth_find.out)
+    run_vep(combine_ont.out)
 
 }
 
 // main workflow
 
-workflow combine {
+workflow pb {
     
-    combine(run_vep.out, pytor.out)
+    combine_pb(sniff.out, pytor.out)
+    run_vep(combine_pb.out)
 }
 
 
 workflow LOMPE {
-    call()
+    call(params.fastq_folder)
     if (params.style == 'ont') {
-        meth(call.out)
+        ont(call.out)
     }
     if (params.style == 'pb') {
-        combine(call.out)
+        pb(call.out)
     }
 
-
 }
+
 //completion handler
 workflow.onComplete {
-    println "Lompe complete at $workflow.complete"
+    println "LOMPE complete at $workflow.complete"
     log.info (workflow.success ? "Done! Lompe is filled with aligned and analyzed files at ${params.output}!" : "Fail. Check ${params.logfile}, maybe lompe fell apart :(")
 }

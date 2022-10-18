@@ -15,7 +15,13 @@ process bcf_snv {
     path "${bam.baseName}.snv.vcf", emit: snvfile
 
     script:
+    if (${params.style} == 'pb') {
+        LR = 'ont'
+    }
+    else {
+        LR = 'pacbio-ccs'
+    }
     """
-    bcftools mpileup -X ${params.style} --threads 4 -f ${params.ref} ${bam} --annotate FORMAT/AD,FORMAT/DP | bcftools call --threads 4 -mv -P0.01 -Ob -o ${bam.baseName}.snv.vcf
+    bcftools mpileup -X ${LR} --threads 4 -f ${params.ref} ${bam} --annotate FORMAT/AD,FORMAT/DP | bcftools call --threads 4 -mv -P0.01 -Ob -o ${bam.baseName}.snv.vcf
     """
 }
