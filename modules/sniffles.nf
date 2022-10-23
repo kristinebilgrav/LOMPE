@@ -6,8 +6,9 @@ call SVs using sniffles
 
 process sniff {
     publishDir params.output, mode:'copy'
-
     beforeScript 'module load bioinfo-tools Sniffles'
+    cpus 16
+    time '5h'
 
     input:
     path(bam)

@@ -19,8 +19,8 @@ process align {
     path "${params.sample_id}.bam.bai", emit: baifile
 
     script:
-    """
-    minimap2 -R '@RG\tID:foo\tSM:bar' -a -t 16 --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${params.sample_id}.bam && \
+    '''
+    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t 16 --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${params.sample_id}.bam && 
     samtools index ${params.sample_id}.bam
-    """
+    '''
 }

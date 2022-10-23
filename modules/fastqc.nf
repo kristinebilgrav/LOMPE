@@ -11,15 +11,14 @@ process fastqc {
     time '2h'
 
     input:
-    path(bam)
+    path(fastq_file)
 
     output:
-    path "${bam.baseName}.fastQC.out/*"
+    path "${params.sample_id}.fastQC.out/*", emit: QC
 
     script:
     """
-    zcat ${bam} | head -5000000 > ${bam.baseName}.fastq && \
-    mkdir ${bam.baseName}.fastQC.out && \    
-    fastqc --threads 16 -o ${bam.baseName}.fastQC.out ${bam.baseName}.fastq
+    mkdir ${params.sample_id}.fastQC.out && 
+    fastqc --threads 16 -o ${params.sample_id}.fastQC.out ${fastq_file}
     """
 }

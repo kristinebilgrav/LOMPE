@@ -8,12 +8,13 @@ nextflow.enable.dsl = 2
 
 
 log.info """\
-Long-read pipeline
-------------------
+LOng-read Multiomic PipelinE
+----------------------------
 config: ${params.config}
-folder(s) : ${params.folder}
+folder(s) : ${params.fastq_folder}
 sample_id : ${params.sample_id}
 output :  ${params.output}
+style : ${params.style}
 
 """
 
@@ -38,60 +39,80 @@ include { bcf_snv } from './modules/bcftools'
 include { pytor } from './modules/pytor'
 include { picard } from './modules/picard'
 include { fastqc } from './modules/fastqc'
-
+include { query ; filter} from './modules/database_filter'
 
 //workflows
-workflow call {
-    fastq = Channel.fromPath("${params.folder}/*fastq.gz")
-    align(fastq)
 
-    bam = Channel.fromPath(fastq.out.bamfile)
-    bai = Channel.fromPath(fastq.out.baifile)
-
-    sniff(bam)
-    bcf_snv(bam)
-    pytor(bam, bcf_snv.out.snvfile)
-
-    picard(bam)
-    fastqc(bam)
-
-}
-
-
-
-//methylation wf:
+//ONT wf, with methylation:
 workflow ont {
+    take: ${params.fastq_folder}
 
-    fastq = Channel.fromPath("${params.fastq_folder}")
-    fast5= Channel.fromPath("${params.fast5_folder}")
-    meth_polish(fastq, fast5)
+    main:
+    fastq_file = Channel.fromPath("${params.fastq_folder}/*fastq.gz")
+    align(fastq_file)
 
-    bam = Channel.fromPath(fastq.out.bamfile)
-    bai = Channel.fromPath(fastq.out.baifile)
-    meth_find(meth_polish.out, bam, bai )
+    sniff(align.out.bamfile)
+    bcf_snv(align.out.bamfile)
+    pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+
+    picard(align.out.bamfile)
+    fastqc(fastq_file)
+
+    fastq_folder = Channel.fromPath("${params.fastq_folder}")
+    fast5_folder= Channel.fromPath("${params.fast5_folder}")
+    meth_polish(fastq_folder, fast5_folder)
+
+    meth_find(meth_polish.out)
 
     combine_ont(sniff.out, pytor.out, meth_find.out)
     run_vep(combine_ont.out)
 
+    query(run_vep.out)
+    filter(query.out)
+
+
 }
 
-// main workflow
-
+// PB workflow
 workflow pb {
-    
-    combine_pb(sniff.out, pytor.out)
+    take: ${params.fastq_folder}
+
+    main:
+    fastq_file = Channel.fromPath("${params.fastq_folder}/*fastq.gz")
+    align(fastq_file)
+
+
+    sniff(align.out.bamfile)
+    bcf_snv(align.out.bamfile)
+    pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+
+    picard(align.out.bamfile)
+    fastqc(fastq_file)
+
+    combine_pb(sniff.out, pytor.out.pytor_vcffile)
     run_vep(combine_pb.out)
+
+    query(run_vep.out)
+    filter(query.out)
+
+    emit:
+    fastqc.out.QC
+
+
 }
 
+//main workflow
+workflow {
 
-workflow LOMPE {
-    call(params.fastq_folder)
-    if (params.style == 'ont') {
-        ont(call.out)
-    }
-    if (params.style == 'pb') {
-        pb(call.out)
-    }
+    main:
+    if (params.style == 'ont') 
+        ont("${params.fastq_folder}")
+    
+    if (params.style == 'pb') 
+        pb("${params.fastq_folder}")
+   
+    emit:
+    filtered
 
 }
 

@@ -7,7 +7,8 @@ call methylation analysis using nanopolish
 process index {
     cpus 6
     time '42h'
-    
+    container = 'quay.io/biocontainers/nanopolish'
+
     input:
     path(fastq)
     path(fast5)
@@ -27,6 +28,7 @@ process index {
 process meth_polish {
     publishDir params.output, mode: 'copy'
     beforeScript 'module load hdf5'
+    container = 'quay.io/biocontainers/nanopolish'
 
     cpus 16
     time '42h'
@@ -37,12 +39,12 @@ process meth_polish {
     path(bai)
 
     output:
-    path "${bam.baseName}.methylation.vcf", emit: methylation_tsv
+    path "${bam.baseName}.methyl_calls.tsv", emit: methylation_tsv
 
     script:
     """
     export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
-    nanopolish call-methylation -r ${fastq} -b ${bam} -g ${params.ref} --threads 16 > ${bam.baseName}.methylation.vcf
+    nanopolish call-methylation -r ${fastq} -b ${bam} -g ${params.ref} --threads 16 > ${bam.baseName}.methyl_calls.tsv
     """
 }
 

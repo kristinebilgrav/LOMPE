@@ -8,16 +8,16 @@ process combine_ont {
     publishDir params.output, mode: 'copy'
     
     input:
-    path(sniff)
+    path(sniff_vcf)
     path(pytor)
     path(methyl)
 
     output:
-    path "${sniff.simpleName}.output.vcf", emit: combined
+    path "${sniff_vcf.simpleName}.output.vcf", emit: combined
 
     script:
     """
-    vcf-merge ${sniff} ${pytor} ${methyl} | bgzip -c > ${annotated_vcf.simpleName}.output.vcf
+    vcf-merge ${sniff_vcf} ${pytor} ${methyl} | bgzip -c > ${sniff_vcf.simpleName}.output.vcf
     """
 
 }
@@ -26,15 +26,15 @@ process combine_pb {
     publishDir params.output, mode: 'copy'
 
     input:
-    path(annotated_vcf)
+    path(sniff_vcf)
     path(pytor)
 
     output:
-    path "${annotated_vcf.simpleName}.output.vcf", emit: combined
+    path "${sniff_vcf.simpleName}.output.vcf", emit: combined
 
     script:
     """
-    vcf-merge ${annotated_vcf} ${pytor}| bgzip -c > ${annotated_vcf.simpleName}.output.vcf
+    vcf-merge ${sniff_vcf} ${pytor}| bgzip -c > ${sniff_vcf.simpleName}.output.vcf
     """
 
 }

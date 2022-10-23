@@ -1,12 +1,15 @@
 # LOMPE
 LOng-read Multi-omics PipelinE
+nextflow version 21.10.6
 
 Utilize Minimap2, Sniffles, CNVpytor, VEP, nanopolish
 
 Custom analysis of methylation calls from ONT
 
 # RUN
-nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < > --sample_id < > --style < ont OR pb > -with-trace
+nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < optional > --sample_id < > --style < ont OR pb > -with-trace --output <  >
+
+
 
 requires;
 pb or ont fastq files

@@ -12,7 +12,7 @@ process query {
     path(combined)
 
     output:
-    path "${combined.baseName}.query.vcf"; emit: queried
+    path "${combined.baseName}.query.vcf", emit: queried
 
     script:
     if (${params.style} == 'pb') {
@@ -33,7 +33,7 @@ process filter {
     path(queried)
 
     output:
-    path "${query.baseName}.filtered.vcf"; emit: filtered
+    path "${query.baseName}.filtered.vcf", emit: filtered
 
     script:
     """
