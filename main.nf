@@ -27,10 +27,10 @@ include {align} from './modules/align'
 if (params.style == 'ont') {
     include { index ; meth_polish } from './modules/nanopolish'
     include { meth_find } from './modules/run_methylation'
-    include { combine_ont } from './modules/combine'
+    include { sort_zip ; combine } from './modules/combine'
 }
 else {
-    include { combine_pb } from './modules/combine'
+    include { sort_zip ; combine } from './modules/combine'
 }
 
 include { sniff } from './modules/sniffles'
@@ -54,6 +54,7 @@ workflow ont {
     sniff(align.out.bamfile)
     bcf_snv(align.out.bamfile)
     pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+    sort_zip(pytor.out)
 
     picard(align.out.bamfile)
     fastqc(fastq_file)
@@ -64,7 +65,7 @@ workflow ont {
 
     meth_find(meth_polish.out)
 
-    combine_ont(sniff.out, pytor.out, meth_find.out)
+    combine(sniff.out.sniff_vcf, sniff.out.sniff_vcf_tbi , sort_zip.out.vcffile, sort_zip.out.vcffile_tbi)
     run_vep(combine_ont.out)
 
     query(run_vep.out)
@@ -85,11 +86,12 @@ workflow pb {
     sniff(align.out.bamfile)
     bcf_snv(align.out.bamfile)
     pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+    sort_zip(pytor.out.pytor_vcffile)
 
     picard(align.out.bamfile)
     fastqc(fastq_file)
 
-    combine_pb(sniff.out, pytor.out.pytor_vcffile)
+    combine(sniff.out.sniff_vcf, sniff.out.sniff_vcf_tbi , sort_zip.out.vcffile, sort_zip.out.vcffile_tbi )
     run_vep(combine_pb.out)
 
     query(run_vep.out)

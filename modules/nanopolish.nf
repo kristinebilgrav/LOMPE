@@ -58,11 +58,11 @@ process split_on_chr {
     path "chr*_meth.tsv", emit: methyl_chrs
 
     script:
-    '''
-    for chr in $(seq 1 22) X Y
+    """
+    for chr in \$(seq 1 22) X Y
     do 
-        head -n1 ${methylation_tsv} >chr$chr.txt
+        head -n1 ${methylation_tsv} >chr\$chr.txt
     done
-    awk 'NR != 1 { print $0 >>("chr"$1".txt") }' ${methylation_tsv}
-    '''
+    awk 'NR != 1 { print \$0 >>("chr"\$1".txt") }' ${methylation_tsv}
+    """
 }

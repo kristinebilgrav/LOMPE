@@ -9,6 +9,7 @@ process pytor {
     
     cpus 8
     time '5h'
+    //errorStrategy 'ignore'
 
     input:
     path(bam)
@@ -17,7 +18,7 @@ process pytor {
 
     output:
     path "${bam.baseName}.pytor.vcf", emit: pytor_vcffile
-    path "${bam.baseName}.pytor", emit: pytor_outfile
+    path "${bam.baseName}.pytor.out", emit: pytor_outfile
 
     script:
     """
@@ -25,12 +26,13 @@ process pytor {
     cnvpytor -root ${bam.baseName}.pytor -gc ${params.ref} 
     cnvpytor -root ${bam.baseName}.pytor -his 20000 200000 
     cnvpytor -root ${bam.baseName}.pytor -partition 20000 200000 
-    cnvpytor -root ${bam.baseName}.pytor -call 20000 > ${bam.baseName}.pytor 
+    cnvpytor -root ${bam.baseName}.pytor -call 20000 > ${bam.baseName}.pytor.out
     cnvpytor -root ${bam.baseName}.pytor -snp ${snvfile} -nofilter 
     cnvpytor -root ${bam.baseName}.pytor -baf 20000 200000 
     cnvpytor -root ${bam.baseName}.pytor -call combined 20000 > ${bam.baseName}.pytor.combined.out 
 
-    > cnvpytor -root ${bam.baseName}.pytor -view 20000 <<ENDL
+    
+    cnvpytor -root ${bam.baseName}.pytor -view 20000 <<ENDL
     set print_filename ${bam.baseName}.pytor.vcf
     print calls
     ENDL

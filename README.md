@@ -1,19 +1,28 @@
 # LOMPE
 LOng-read Multi-omics PipelinE
+
 nextflow version 21.10.6
 
-Utilize Minimap2, Sniffles, CNVpytor, VEP, nanopolish
+Workflow: 
 
-Custom analysis of methylation calls from ONT
+minimap2, samtools, sniffles 1, BCFtools, CNVpytor, nanopolish, VEP, vcftools, custom database annotation and filtering of variants
+
+Includes custom analysis of methylation calls from ONT fast5 files
+
+QC: FastQC, picard
 
 # RUN
-nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < optional > --sample_id < > --style < ont OR pb > -with-trace --output <  >
-
-
+nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < optional > --sample_id < > --style < ont OR pb > 
+--output <  > -with-trace 
 
 requires;
-pb or ont fastq files
-Albacore basecalled fast5 files
-samtools, canu, minimap2, sniffles (v1), picard, pandas?, VEP, vcftools, bcftools
 
-#
+pacbio (pb) or nanopore (ont) fastq files
+
+For methylation calling:
+Basecalled fast5 files (ont)
+
+# Installation
+git clone
+modify config to your needs (executor, reference files, databases)
+run!

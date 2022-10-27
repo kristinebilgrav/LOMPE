@@ -15,14 +15,14 @@ process query {
     path "${combined.baseName}.query.vcf", emit: queried
 
     script:
-    if (${params.style} == 'pb') {
-        DB = ${params.pb_DB}
-    }
-    else {
-        DB = ${params.ont_DB}
-    }
+    if (params.style == 'pb') 
+        DB = params.pb_DB
+
+    else 
+        DB = params.ont_DB
+
     """
-    svdb --query --query_vcf ${combined} --db ${params.${DB}} --overlap -1 > ${combined.baseName}.query.vcf
+    svdb --query --query_vcf ${combined} --db ${DB} --overlap -1 > ${combined.baseName}.query.vcf
     """
 }
 
@@ -33,11 +33,11 @@ process filter {
     path(queried)
 
     output:
-    path "${query.baseName}.filtered.vcf", emit: filtered
+    path "${queried.baseName}.filtered.vcf", emit: filtered
 
     script:
     """
-    python ./scripts/filter_rank.py ${queried} ${query.baseName}.filtered.vcf
+    python ${params.LOMPE_home}/scripts/filter_rank.py ${queried} ${queried.baseName}.filtered.vcf
     """
     
 }

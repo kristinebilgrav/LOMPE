@@ -4,37 +4,42 @@
 combine variant calls
 */
 
-process combine_ont {
+process sort_zip {
     publishDir params.output, mode: 'copy'
-    
+
     input:
-    path(sniff_vcf)
-    path(pytor)
-    path(methyl)
+    path(vcf)
 
     output:
-    path "${sniff_vcf.simpleName}.output.vcf", emit: combined
+    path "${vcf.baseName}.sort.vcf.gz", emit: vcffile
+    path  "${vcf.baseName}.sort.vcf.gz.tbi", emit: vcffile_tbi
 
     script:
     """
-    vcf-merge ${sniff_vcf} ${pytor} ${methyl} | bgzip -c > ${sniff_vcf.simpleName}.output.vcf
+    vcf-sort ${vcf} 2> /dev/null > ${vcf.baseName}.sort.vcf
+    bgzip ${vcf.baseName}.sort.vcf
+    tabix -p vcf ${vcf.baseName}.sort.vcf.gz
     """
 
 }
 
-process combine_pb {
+
+
+process combine {
     publishDir params.output, mode: 'copy'
 
     input:
     path(sniff_vcf)
+    path(sniff_vcf_tbi)
     path(pytor)
+    path(pytor_tbi)
 
     output:
-    path "${sniff_vcf.simpleName}.output.vcf", emit: combined
+    path "${sniff_vcf.simpleName}.output.vcf.gz", emit: combined
 
     script:
     """
-    vcf-merge ${sniff_vcf} ${pytor}| bgzip -c > ${sniff_vcf.simpleName}.output.vcf
+    svdb --merge --vcf ${sniff_vcf} ${pytor} > ${sniff_vcf.simpleName}.output.vcf
     """
 
 }
