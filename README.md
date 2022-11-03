@@ -9,10 +9,13 @@ minimap2, samtools, sniffles 1, BCFtools, CNVpytor, nanopolish, VEP, vcftools, c
 
 Includes custom analysis of methylation calls from ONT fast5 files
 
-QC: FastQC, picard
+QC: 
+
+FastQC, picard
 
 # RUN
-nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < optional > --sample_id < > --style < ont OR pb > 
+nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < optional > --sample_id < > 
+--style < ont OR pb > 
 --output <  > -with-trace 
 
 requires;
@@ -20,9 +23,12 @@ requires;
 pacbio (pb) or nanopore (ont) fastq files
 
 For methylation calling:
+
 Basecalled fast5 files (ont)
 
 # Installation
 git clone
+
 modify config to your needs (executor, reference files, databases)
+
 run!

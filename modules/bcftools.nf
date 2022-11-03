@@ -7,7 +7,7 @@ process bcf_snv {
     errorStrategy 'ignore'
     
     cpus 8
-    time '10h'
+    time '22h'
 
     input:
     path(bam)

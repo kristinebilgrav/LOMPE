@@ -4,23 +4,27 @@
 call methylation analysis using nanopolish
 */
 
-process index {
+process meth_index {
+    publishDir params.output, mode: 'copy'
     cpus 6
     time '42h'
     container = 'quay.io/biocontainers/nanopolish'
 
     input:
-    path(fastq)
-    path(fast5)
+    path(fast5_folder)
+    path(fastq_file)
+    
 
     output:
-    success
+    path "${fastq_file}.index", emit: polish_index
+    path "${fastq_file}.index.fai", emit: polish_index_fai
+    path "${fastq_file}.index.gzi", emit: polish_index_gzi
+    path "${fastq_file}.index.readdb", emit: polish_index_readdb
+    
 
     script:
     """
-    zcat fastq_pass/* > fastq
-    gzip fastq
-    nanopolish index -d ${fast5}/ ${fastq}
+    nanopolish index -d ${fast5_folder}/ ${fastq_file}
     """
 }
 
@@ -34,9 +38,12 @@ process meth_polish {
     time '42h'
 
     input:
-    path(fastq)
+    path(fastq_file)
     path(bam)
     path(bai)
+    path(polish_index)
+    path(polish_index_fai)
+    path(polish_index_gzi)
 
     output:
     path "${bam.baseName}.methyl_calls.tsv", emit: methylation_tsv
@@ -44,7 +51,7 @@ process meth_polish {
     script:
     """
     export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
-    nanopolish call-methylation -r ${fastq} -b ${bam} -g ${params.ref} --threads 16 > ${bam.baseName}.methyl_calls.tsv
+    nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads 16 > ${bam.baseName}.methyl_calls.tsv
     """
 }
 

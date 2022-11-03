@@ -27,6 +27,8 @@ process sort_zip {
 
 process combine {
     publishDir params.output, mode: 'copy'
+    cpus 2
+    time '3h'    
 
     input:
     path(sniff_vcf)

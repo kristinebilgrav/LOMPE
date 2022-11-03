@@ -17,7 +17,7 @@ process meth_find {
 
     script:
     """
-    python ./script/methylation.py ${methyl_chrs} ${methyl_chrs.baseName}.methyl_pos.tsv
+    python ${params.LOMPE_home}/scripts/methylation.py ${methyl_chrs} ${methyl_chrs.baseName}.methyl_pos.tsv
     """
 }
 
