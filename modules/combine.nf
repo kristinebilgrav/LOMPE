@@ -32,9 +32,8 @@ process combine {
 
     input:
     path(sniff_vcf)
-    path(sniff_vcf_tbi)
     path(pytor)
-    path(pytor_tbi)
+
 
     output:
     path "${sniff_vcf.simpleName}.output.vcf.gz", emit: combined

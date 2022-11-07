@@ -27,7 +27,7 @@ process cat_meth {
     time '1h'
 
     input:
-    path(methylated_chr) //all file in one?
+    path methylated_chr 
 
     output:
     path "${params.sample_id}.methylated.tsv", emit: methylation_allchr

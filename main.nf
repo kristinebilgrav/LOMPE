@@ -59,13 +59,12 @@ workflow ont {
     sniff(align.out.bamfile)
     bcf_snv(align.out.bamfile)
     pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
-    sort_zip(pytor.out)
 
     picard(align.out.bamfile)
     fastqc(fastq_file)
 
     combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile)
-    run_vep(combine_ont.out)
+    run_vep(combine.out)
 
     query(run_vep.out)
     filter(query.out)
@@ -86,13 +85,12 @@ workflow pb {
     sniff(align.out.bamfile)
     bcf_snv(align.out.bamfile)
     pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
-    sort_zip(pytor.out.pytor_vcffile)
 
     picard(align.out.bamfile)
     fastqc(fastq_file)
 
     combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile )
-    run_vep(combine_pb.out)
+    run_vep(combine.out)
 
     query(run_vep.out)
     filter(query.out)

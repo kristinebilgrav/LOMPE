@@ -44,6 +44,7 @@ process meth_polish {
     path(polish_index)
     path(polish_index_fai)
     path(polish_index_gzi)
+    path(polish_index_readdb)
 
     output:
     path "${bam.baseName}.methyl_calls.tsv", emit: methylation_tsv
