@@ -26,7 +26,7 @@ include {cat ; align} from './modules/align'
 
 if (params.style == 'ont') {
     include { meth_index ; meth_polish } from './modules/nanopolish'
-    include { meth_find } from './modules/run_methylation'
+    //include { meth_find } from './modules/run_methylation'
     
 }
 
@@ -49,25 +49,38 @@ workflow ont {
     fastq_folder = Channel.fromPath("${params.fastq_folder}/*").collect()
     cat(fastq_folder)
     align(cat.out.fastq_file)
+    
+    //SNV calling 
+    bcf_snv(align.out.bamfile)
 
+    //phasing
+    phase_it(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+
+    //add methylation info to bam
     fast5_folder= Channel.fromPath("${params.fast5_folder}")
     meth_index( fast5_folder, cat.out.fastq_file )
-    meth_polish(cat.out.fastq_folder, bam, bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
-    meth_find(meth_polish.out.methylation_tsv)
-    
-    
-    sniff(align.out.bamfile)
-    bcf_snv(align.out.bamfile)
-    pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+    meth_polish(cat.out.fastq_folder, phase_it.out.phased_bam, phase_it.out.phased_bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
+    //split_on_chr(meth_polish.out.methylation_tsv)
+    //meth_find(split_on_chr.out)
+    //cat_meth(meth_find.out.collect())
 
+    //extract phased methylation
+    extract_meth(phase_it.out.phased_bam)
+
+    //SV calling
+    sniff(phase_it.out.phased_bam)
+    pytor(phase_it.out.phased_bam, phase_it.out.phased_bai, bcf_snv.out.snvfile)
+    combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile)
+    run_vep(combine.out)
+    query(run_vep.out)
+    filter(query.out)
+
+    //QC
     picard(align.out.bamfile)
     fastqc(fastq_file)
 
-    combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile)
-    run_vep(combine.out)
 
-    query(run_vep.out)
-    filter(query.out)
+    
 
 
 }
@@ -77,23 +90,30 @@ workflow pb {
     take: ${params.fastq_folder}
 
     main:
-    fastq_folder = Channel.fromPath("${params.fastq_folder}/*").collect()
+    fastq_folder = Channel.fromPath("${params.fastq_folder}/*gz").collect()
     cat(fastq_folder)
     align(cat.out.fastq_file)
 
-
-    sniff(align.out.bamfile)
+    //SNV calling
     bcf_snv(align.out.bamfile)
+
+    //phasing
+    phase_it(align.out.bam, align.out.bai, bcf_snv.out.snvfile)
+
+    //SV calling
+    sniff(align.out.bamfile)
     pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
-
-    picard(align.out.bamfile)
-    fastqc(fastq_file)
-
     combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile )
     run_vep(combine.out)
 
     query(run_vep.out)
     filter(query.out)
+
+    //QC
+//    picard(align.out.bamfile)
+ //   fastqc(cat.out.fastq_file)
+
+    
 
     
 }

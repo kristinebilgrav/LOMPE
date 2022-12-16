@@ -1,7 +1,7 @@
 # LOMPE
 LOng-read Multi-omics PipelinE
 
-nextflow version 21.10.6
+nextflow version 21.10.6 (version important)
 
 Workflow: 
 

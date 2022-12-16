@@ -17,9 +17,9 @@ process run_vep {
   output:
   path "${queried.baseName}.VEP.vcf", emit: annotated_vcf
 
-  shell:
+  script:
   """
-  ${params.vep_path} -i ${queried} -o ${queried.baseName}.VEP.vcf ${params.vep_args} 
+  vep -i ${queried} -o ${queried.baseName}.VEP.vcf ${params.vep_args} 
   """
 
 }

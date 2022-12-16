@@ -47,12 +47,12 @@ process meth_polish {
     path(polish_index_readdb)
 
     output:
-    path "${bam.baseName}.methyl_calls.tsv", emit: methylation_tsv
+    path "${bam.baseName}.methyl.bam", emit: methylation_bam
 
     script:
     """
     export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
-    nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads 16 > ${bam.baseName}.methyl_calls.tsv
+    nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads 16 --methylation cpg --modbam-output-name ${bam.baseName}.methyl.bam
     """
 }
 
@@ -69,7 +69,7 @@ process split_on_chr {
     """
     for chr in \$(seq 1 22) X Y
     do 
-        head -n1 ${methylation_tsv} >chr\$chr.txt
+        head -n1 ${methylation_tsv} > chr\$chr.txt
     done
     awk 'NR != 1 { print \$0 >>("chr"\$1".txt") }' ${methylation_tsv}
     """
