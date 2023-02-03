@@ -1,16 +1,23 @@
 # LOMPE
 LOng-read Multi-omics PipelinE
 
+* Under development *
+
 nextflow version 21.10.6 (version important)
 
 Workflow: 
+fastq -> bam (minimap2)
+snv calling and annotation (bcftools)
+phasing and haplotagging of bam file (whatshap)
+methylation calling (ont) (nanopolish)
+sv calling and cnv calling (sniffles1 and CNVpytor)
+filtering SVs | extraction of methylation and phasing info (SVDB | cpgtools)
+
 
 minimap2, samtools, sniffles 1, BCFtools, CNVpytor, nanopolish, VEP, vcftools, custom database annotation and filtering of variants
 
-Includes custom analysis of methylation calls from ONT fast5 files
 
 QC: 
-
 FastQC, picard
 
 # RUN

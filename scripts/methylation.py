@@ -32,7 +32,7 @@ for input in open(sys.argv[1]):
     log_methy = float(line[filevars['log_lik_methylated']])
     log_unmeth = float(line[filevars['log_lik_unmethylated']])
 
-    if log_methy > -10 : 
+    if log_methy > -10 : ##?? more than -10
         continue
 
     if pos_start not in ratio_dict:

@@ -16,11 +16,15 @@ for line in open(sys.argv[1]):
     line = line.rstrip('\n')
 
     # SV length
+    
     svlen = int(line.split('SVLEN=')[-1].split(';')[0])
     if svlen > 1000:
         length = 'pass'
     else:
         length = 'fail'
+
+    if 'BND' in line:
+        length = 'pass'
 
     # FRQ
     if 'FRQ' in line:

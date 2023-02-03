@@ -11,23 +11,23 @@ process phase_it {
 
     input:
     path(bam)
-    path(snv_vcf)
+    path(annotated_snv_vcf)
 
 
     output:
-    path "${bam.baseName}.phased.bam", emit: phased_bam
-    path "${bam.baseName}.phased.bam.bai", emit: phased_bai
+    path "${bam.baseName}.phased.vcf.gz", emit: phased_vcf
+    path "${bam.baseName}.phased.vcf.gz.tbi", emit: phased_vcf_tbi
+    path "${bam.baseName}.haplotagged.bam", emit: phased_bam
+    path "${bam.baseName}.haplotagged.bam.bai", emit: phased_bai
 
 
     script:
-    if (params.style == 'pb') 
-        phase_param = '/opt/margin_dir/params/phase/allParams.haplotag.pb-hifi.json'
-    
-    else 
-        phase_param = '/opt/margin_dir/params/phase/allParams.haplotag.ont-r94g507.json'
     """
-    margin phase ${bam} ${params.ref} ${snv_vcf} ${phase_param} -t 8 -o ${bam.baseName}.phased.bam
-    samtools index -@ 8  ${bam.baseName}.phased.bam
+    whatshap phase --tag=PS --ignore-read-groups -o ${bam.baseName}.phased.vcf --reference ${params.ref} ${bam} 
+    bgzip ${bam.baseName}.phased.vcf
+    tabix ${bam.baseName}.phased.vcf.gz
+    whatshap haplotag -o ${bam.baseName}.haplotagged.bam --reference ${params.ref} ${bam.baseName}.phased.vcf.gz  ${bam} --output-threads=8
+    samtools index -@ 8 ${bam.baseName}.haplotagged.bam
     """
     
 }

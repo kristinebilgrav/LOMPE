@@ -18,7 +18,7 @@ process extract_meth {
 
     script:
     """
-    /miniconda/bin/python pb-CpG-tools/aligned_bam_to_cpg_scores.py  -b ${bam} -f ${params.ref} -o ${bam.baseName} -t 8 -d /pb-CpG-tools/pileup_calling_model
+    /miniconda/bin/python pb-CpG-tools/aligned_bam_to_cpg_scores.py  -b ${bam} -f ${params.ref} -o ${bam.baseName} -t 8 -p model -d /pb-CpG-tools/pileup_calling_model
     """
 
 }

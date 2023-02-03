@@ -52,9 +52,13 @@ workflow ont {
     
     //SNV calling 
     bcf_snv(align.out.bamfile)
+    snv_filter(bcf_snv.out)
+
+    //SNV annotate 
+    annotate_snvs(snv_filter.out)
 
     //phasing
-    phase_it(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+    phase_it(align.out.bamfile, align.out.baifile, annotate_snvs.out)
 
     //add methylation info to bam
     fast5_folder= Channel.fromPath("${params.fast5_folder}")
@@ -78,8 +82,6 @@ workflow ont {
     //QC
     picard(align.out.bamfile)
     fastqc(fastq_file)
-
-
     
 
 
@@ -96,9 +98,13 @@ workflow pb {
 
     //SNV calling
     bcf_snv(align.out.bamfile)
+    snv_filter(bcf_snv.out)
+
+    //SNV annotate 
+    annotate_snvs(snv_filter.out)
 
     //phasing
-    phase_it(align.out.bam, align.out.bai, bcf_snv.out.snvfile)
+    phase_it(align.out.bam, align.out.bai, annotate_snvs.out)
 
     //SV calling
     sniff(align.out.bamfile)
