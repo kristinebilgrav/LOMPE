@@ -11,6 +11,7 @@ process phase_it {
 
     input:
     path(bam)
+    path(baifile)
     path(annotated_snv_vcf)
 
 
@@ -18,16 +19,31 @@ process phase_it {
     path "${bam.baseName}.phased.vcf.gz", emit: phased_vcf
     path "${bam.baseName}.phased.vcf.gz.tbi", emit: phased_vcf_tbi
     path "${bam.baseName}.haplotagged.bam", emit: phased_bam
-    path "${bam.baseName}.haplotagged.bam.bai", emit: phased_bai
 
 
     script:
     """
-    whatshap phase --tag=PS --ignore-read-groups -o ${bam.baseName}.phased.vcf --reference ${params.ref} ${bam} 
+    whatshap phase --tag=PS --ignore-read-groups -o ${bam.baseName}.phased.vcf --reference ${params.ref} ${annotated_snv_vcf} ${bam} 
     bgzip ${bam.baseName}.phased.vcf
     tabix ${bam.baseName}.phased.vcf.gz
     whatshap haplotag -o ${bam.baseName}.haplotagged.bam --reference ${params.ref} ${bam.baseName}.phased.vcf.gz  ${bam} --output-threads=8
-    samtools index -@ 8 ${bam.baseName}.haplotagged.bam
     """
     
+}
+
+process bamindex {
+    publishDir params.output, mode: 'copy'
+    cpus 8
+    time '2h'
+
+    input:
+    path(bam)
+
+    output:
+    path "${bam.baseName}.bam.bai", emit: bai
+
+    script:
+    """
+    samtools index -@ 8 ${bam}
+    """
 }

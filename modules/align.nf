@@ -5,7 +5,7 @@ alignment of fastq files using minimap2
 */
 
 process cat {
-    publishDir params.output, mode:'copy'
+
 
     cpus 2
     time '2h'
@@ -24,11 +24,7 @@ process cat {
 }
 
 process align {
-    publishDir params.output, mode:'copy'
-    beforeScript 'module load minimap2'
 
-    cpus 16
-    time '4h'
 
     input:
     path(fastq)
@@ -39,7 +35,7 @@ process align {
 
     script: 
     """
-    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t 16 --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${params.sample_id}.bam && 
+    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${params.sample_id}.bam && 
     samtools index ${params.sample_id}.bam
     """
 }

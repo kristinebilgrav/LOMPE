@@ -7,9 +7,6 @@ fastQC
 process fastqc {
     publishDir params.output, mode: 'copy'
 
-    cpus 16
-    time '2h'
-
     input:
     path(fastq_file)
 

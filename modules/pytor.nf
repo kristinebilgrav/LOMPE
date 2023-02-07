@@ -5,11 +5,6 @@ call CNVs using pytor
 */
 
 process pytor {
-    publishDir params.output, mode:'copy'
-    
-    cpus 8
-    time '5h'
-    //errorStrategy 'ignore'
 
     input:
     path(bam)
@@ -18,7 +13,7 @@ process pytor {
 
     output:
     path "${bam.baseName}.pytor.vcf", emit: pytor_vcffile
-    path "${bam.baseName}.pytor.out", emit: pytor_outfile
+    path "${bam.baseName}.pytor.out"
 
     script:
     """

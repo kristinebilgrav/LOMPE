@@ -57,7 +57,6 @@ process meth_polish {
 }
 
 process split_on_chr {
-    publishDir params.output, mode: 'copy'
 
     input: 
     path(methylation_tsv)

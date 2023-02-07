@@ -1,19 +1,14 @@
 
 
 process bcf_snv {
-    publishDir params.output, mode:'copy'
-
-    beforeScript 'module load bioinfo-tools bcftools'
+   
     errorStrategy 'ignore'
-    
-    cpus 8
-    time '22h'
 
     input:
     path(bam)
 
     output:
-    path "${bam.baseName}.snv.vcf", emit: snvfile
+    path "${bam.baseName}.snv.vcf"
 
 
     script:
@@ -31,20 +26,16 @@ process bcf_snv {
 
 process filter_snvs {
     publishDir params.output, mode:'copy'
-    beforeScript 'module load bioinfo-tools bcftools'
     errorStrategy 'ignore'
-
-    cpus 4
-    time '12h'
 
     input:
     path(snvfile)
 
     output:
-    path "${snvfile.baseName}.snv.filter.vcf", emit: snv_filter
+    path "${snvfile.baseName}.filter.vcf", emit: snv_filtered
 
     script:
     """
-    bcftools filter --exclude "FORMAT/AD[0:0] < 3" $2.vcf | bcftools filter --exclude "FORMAT/AD[0:1] < 3" | bcftools filter --exclude "FORMAT/DP > 45" |bcftools filter --exclude "GT!='het'" > ${bam.baseName}.snv.filter.vcf
+    bcftools filter --exclude "FORMAT/AD[0:0] < 3" ${snvfile} | bcftools filter --exclude "FORMAT/AD[0:1] < 3" | bcftools filter --exclude "FORMAT/DP > 45" |bcftools filter --exclude "GT!='het'" > ${snvfile.baseName}.filter.vcf
     """
 }

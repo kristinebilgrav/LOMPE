@@ -6,8 +6,6 @@ picard
 
 process picard {
     publishDir params.output, mode:'copy'
-    cpus 2
-    time '2h'
 
     input:
     path(bam)

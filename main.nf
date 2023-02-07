@@ -26,18 +26,19 @@ include {cat ; align} from './modules/align'
 
 if (params.style == 'ont') {
     include { meth_index ; meth_polish } from './modules/nanopolish'
-    //include { meth_find } from './modules/run_methylation'
+    include { extract_meth } from './modules/make_methyl_readable'
     
 }
 
 include { combine } from './modules/combine'
 include { sniff } from './modules/sniffles'
-include { run_vep } from './modules/annotate'
-include { bcf_snv } from './modules/bcftools'
+include { run_vep ; annotate_snvs} from './modules/annotate'
+include { phase_it ; bamindex , bamindex as index_methbam } from './modules/phase'
+include { bcf_snv ; filter_snvs } from './modules/bcftools'
 include { pytor } from './modules/pytor'
 include { picard } from './modules/picard'
 include { fastqc } from './modules/fastqc'
-include { query ; filter} from './modules/database_filter'
+include { query ; filter_query} from './modules/database_filter'
 
 //workflows
 
@@ -52,36 +53,38 @@ workflow ont {
     
     //SNV calling 
     bcf_snv(align.out.bamfile)
-    snv_filter(bcf_snv.out)
+    filter_snvs(bcf_snv.out)
 
     //SNV annotate 
-    annotate_snvs(snv_filter.out)
+    annotate_snvs(filter_snvs.out.snv_filtered)
 
     //phasing
     phase_it(align.out.bamfile, align.out.baifile, annotate_snvs.out)
+    bamindex(phase_it.out.phased_bam)
 
     //add methylation info to bam
     fast5_folder= Channel.fromPath("${params.fast5_folder}")
     meth_index( fast5_folder, cat.out.fastq_file )
-    meth_polish(cat.out.fastq_folder, phase_it.out.phased_bam, phase_it.out.phased_bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
+    meth_polish(cat.out.fastq_folder, phase_it.out.phased_bam, bamindex.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
     //split_on_chr(meth_polish.out.methylation_tsv)
     //meth_find(split_on_chr.out)
     //cat_meth(meth_find.out.collect())
+    index_methbam(meth_polish.out.methylation_bam)
 
     //extract phased methylation
-    extract_meth(phase_it.out.phased_bam)
+    extract_meth(meth_polish.out.methylation_bam, index_methbam.bai)
 
     //SV calling
     sniff(phase_it.out.phased_bam)
-    pytor(phase_it.out.phased_bam, phase_it.out.phased_bai, bcf_snv.out.snvfile)
+    pytor(phase_it.out.phased_bam, bamindex.out.phased_bai, bcf_snv.out.snvfile)
     combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile)
     run_vep(combine.out)
     query(run_vep.out)
-    filter(query.out)
+    filter_query(query.out)
 
     //QC
     picard(align.out.bamfile)
-    fastqc(fastq_file)
+    fastqc(cat.out.fastq_file)
     
 
 
@@ -98,22 +101,23 @@ workflow pb {
 
     //SNV calling
     bcf_snv(align.out.bamfile)
-    snv_filter(bcf_snv.out)
+    filter_snvs(bcf_snv.out)
 
     //SNV annotate 
-    annotate_snvs(snv_filter.out)
+    annotate_snvs(filter_snvs.out.snv_filtered)
 
     //phasing
     phase_it(align.out.bam, align.out.bai, annotate_snvs.out)
+    bamindex(phase_it.out.phased_bam)
 
     //SV calling
-    sniff(align.out.bamfile)
-    pytor(align.out.bamfile, align.out.baifile, bcf_snv.out.snvfile)
+    sniff(phase_it.out.phased_bam)
+    pytor(phase_it.out.phased_bam, bamindex.out.phased_bai, bcf_snv.out.snvfile)
     combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile )
     run_vep(combine.out)
 
     query(run_vep.out)
-    filter(query.out)
+    filter_query(query.out)
 
     //QC
 //    picard(align.out.bamfile)

@@ -3,7 +3,13 @@ LOng-read Multi-omics PipelinE
 
 * Under development *
 
-nextflow version 21.10.6 (version important)
+A pipeline for aligning long read pacbio or nanopore fastq files,
+calling SNVs, SVs and methylation, 
+with phasing and filtering.
+
+Returns bam file with haplotags and methylation tags (methylation optional) for visualization and analysis,
+vcf files with filtered and annotated snps and svs, 
+bed file with positional methylation status (optional)
 
 Workflow: 
 fastq -> bam (minimap2)
@@ -20,18 +26,44 @@ minimap2, samtools, sniffles 1, BCFtools, CNVpytor, nanopolish, VEP, vcftools, c
 QC: 
 FastQC, picard
 
+# Install
+
+Dependencies:
+Nextflow version 21.10.6
+python3
+Docker or singularity
+samtools 
+bcftools  
+FastQ
+For ONT methylation calling: hdf5
+
+git clone < repo >
+
+edit config to your needs
+
 # RUN
 nextflow run main.nf -config < > --fastq_folder < > --fast5_folder < optional > --sample_id < > 
---style < ont OR pb > 
+--style < ont OR pb >  
 --output <  > -with-trace 
 
-requires;
+Input:
 
-pacbio (pb) or nanopore (ont) fastq files
+pacbio (pb) or nanopore (ont) fastq files (gzipped)
 
-For methylation calling:
-
+Methylation calling:
+Only performed on ONT samples. 
 Basecalled fast5 files (ont)
+
+For SVDB database annotation and filtering:
+
+Local SVDB database with variants to use for filtering
+
+# Output
+
+returns aligned bam with tags for phasing (HP) and methylation (Mm ; ONT only),
+annotated and phased snv file, 
+annotated and (given database) filtered SV vcf, 
+bed files with phased methylation probabilities (ONT) #implement for PB if present in bam (no align option)
 
 # Installation
 git clone

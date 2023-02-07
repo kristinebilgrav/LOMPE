@@ -6,15 +6,11 @@ filter using DB and SVDB
 
 
 process query {
-    publishDir params.output, mode: 'copy'
-    cpus 2
-    time '3h'
-
     input:
     path(combined)
 
     output:
-    path "${combined.baseName}.query.vcf", emit: queried
+    path "${combined.baseName}.query.vcf"
 
     script:
     if (params.style == 'pb') 
@@ -28,10 +24,8 @@ process query {
     """
 }
 
-process filter {
+process filter_query {
     publishDir params.output, mode: 'copy'
-    cpus 1
-    time '2h'
 
     input:
     path(queried)
