@@ -5,11 +5,8 @@ LOng-read Multi-omics PipelinE
 
 A pipeline for aligning long read pacbio or nanopore fastq files,
 calling SNVs, SVs and methylation, 
-with phasing and filtering.
+with phasing and filtering. 
 
-Returns bam file with haplotags and methylation tags (methylation optional) for visualization and analysis,
-vcf files with filtered and annotated snps and svs, 
-bed file with positional methylation status (optional)
 
 Workflow: #image
 fastq -> bam (minimap2)
@@ -30,11 +27,17 @@ FastQC, picard
 
 Dependencies:
 Nextflow version 21.10.6
+
 python3
+
 Docker or singularity
+
 samtools 
+
 bcftools  
+
 FastQ
+
 For ONT methylation calling: hdf5
 
 git clone < repo >
@@ -48,12 +51,16 @@ edit config to your needs
     --style < ont OR pb>   -with-trace 
 
 
-sample ID is detected from the folder given; path/to/mySample/ will generate sample ID: mySample
+sample ID is detected from the folder given; path/to/mySample/ will generate sample ID mySample
+
 for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder
+
 the samplesheet.csv need to contain a column called SamplePath with the folder path
 
 Input:
+
 nanopore: folder containing fastq_pass and fast5_pass folders with fastq.gz / fast5 
+
 pacbio: folder containing fastq_pass with fastq.gz OR bam file
 
 Methylation annotation of bam:
@@ -67,7 +74,7 @@ clusteroptions, annotation databases.
 example config file can be found as LOMPE.config
 
 # Output
-ONT: 
+    ONT: 
     sample_id.phased.haplotagged.bam(.bai) HP and Mm tags 
     sample_id.snv.filtered.vcf
     sample_id.output.VEP.query.filtered.vcf
@@ -76,7 +83,7 @@ ONT:
     sample_id.wgsmetrics.txt
     sample_id.fastQC.out/
 
-PB: 
+    PB: 
     sample_id.phased.bam(.bai)
     sample_id.snv.filtered.vcf
     sample_id.output.VEP.query.filtered.vcf
@@ -85,13 +92,3 @@ PB:
 
     if bam with methyl sites:
     sample_id.combined/hap1/hap2.denovo.bed pb-cpg-tools for more info
-
-
-
-
-# Installation
-git clone
-
-modify config to your needs (executor, reference files, databases)
-
-run!
