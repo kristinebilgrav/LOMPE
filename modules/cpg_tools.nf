@@ -4,7 +4,7 @@
 output methylation from bamfile to readable file
 */
 
-process extract_meth {
+process cpg_tools  {
     publishDir params.output, mode: 'copy'
 
     input:

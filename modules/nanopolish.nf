@@ -52,8 +52,31 @@ process meth_polish {
     script:
     """
     export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
-    nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads 16 --methylation cpg --modbam-output-name ${bam.baseName}.methyl.bam
+    nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads ${task.cpus} --methylation cpg --modbam-output-name ${bam.baseName}.methyl.bam
     """
+}
+
+process call_meth {
+    input:
+    path(fastq_file)
+    path(bam)
+    path(bai)
+    path(polish_index)
+    path(polish_index_fai)
+    path(polish_index_gzi)
+    path(polish_index_readdb)
+
+    output:
+    path "${bam.baseName}.methylsites.tsv", emit: methylation_tsv
+    ptah "${bam.baseName}.methylfrequency.tsv", emit: methylation_frequency
+
+    script:
+    """
+    export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
+    nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads ${task.cpus} >  ${bam.baseName}.methylsites.tsv
+    scripts/calculate_methylation_frequency.py ${bam.baseName}.methylsites.tsv > ${bam.baseName}.methylfrequency.tsv
+    """
+
 }
 
 process split_on_chr {

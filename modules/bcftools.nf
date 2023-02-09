@@ -8,7 +8,7 @@ process bcf_snv {
     path(bam)
 
     output:
-    path "${bam.baseName}.snv.vcf"
+    path "${bam.baseName}.snv.vcf", emit: snvfile
 
 
     script:

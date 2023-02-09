@@ -5,13 +5,12 @@ call SVs using sniffles
 */
 
 process sniff {
-    beforeScript 'module load bioinfo-tools Sniffles'
-    cpus 16
-    time '5h'
+    
 
     input:
     path(bam)
-
+    path(bai)
+    
     output:
     path "${bam.baseName}.sniffles.vcf", emit: sniff_vcf
 

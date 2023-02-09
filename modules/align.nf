@@ -11,15 +11,18 @@ process cat {
     time '2h'
 
     input:
-    path fq_files
+    //path fq_files
+    path(fq_folder)
 
     output:
-    path "${params.sample_id}.fastq.gz", emit: fastq_file
+    path "${sample_id}.fastq.gz", emit: fastq_file
 
     script:
-    """
-    zcat ${fq_files} > ${params.sample_id}.fastq  
-    gzip ${params.sample_id}.fastq
+    String path = fq_folder 
+    sample_id = path.tokenize('/')[-1]
+    """ 
+    zcat ${fq_folder}/fastq_pass/*gz > ${sample_id}.fastq
+    gzip ${sample_id}.fastq
     """
 }
 
@@ -30,12 +33,12 @@ process align {
     path(fastq)
 
     output:
-    path "${params.sample_id}.bam", emit: bamfile
-    path "${params.sample_id}.bam.bai", emit: baifile
+    path "${fastq.baseName}.bam", emit: bamfile
+    path "${fastq.baseName}.bam.bai", emit: baifile
 
     script: 
     """
-    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${params.sample_id}.bam && 
-    samtools index ${params.sample_id}.bam
+    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${fastq.baseName}.bam && 
+    samtools index -@ ${task.cpus} ${fastq.baseName}.bam
     """
 }

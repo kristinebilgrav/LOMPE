@@ -13,7 +13,7 @@ process pytor {
 
     output:
     path "${bam.baseName}.pytor.vcf", emit: pytor_vcffile
-    path "${bam.baseName}.pytor.out"
+    path "${bam.baseName}.pytor.out", emit: pytor_outfile
 
     script:
     """

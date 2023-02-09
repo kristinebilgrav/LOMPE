@@ -6,8 +6,6 @@ phase genome
 
 process phase_it {
     publishDir params.output, mode: 'copy'
-    cpus 8
-    time '16h'
 
     input:
     path(bam)
@@ -44,6 +42,6 @@ process bamindex {
 
     script:
     """
-    samtools index -@ 8 ${bam}
+    samtools index -@ ${task.cpus} ${bam}
     """
 }
