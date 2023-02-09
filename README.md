@@ -50,7 +50,7 @@ edit config to your needs
 
 sample ID is detected from the folder given; path/to/mySample/ will generate sample ID: mySample
 for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder
-
+the samplesheet.csv need to contain a column called SamplePath with the folder path
 
 Input:
 nanopore: folder containing fastq_pass and fast5_pass folders with fastq.gz / fast5 
