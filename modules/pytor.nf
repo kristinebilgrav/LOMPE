@@ -5,6 +5,7 @@ call CNVs using pytor
 */
 
 process pytor {
+    tag "${params.style}:${params.sample_id}:CNVpytor"
 
     input:
     path(bam)

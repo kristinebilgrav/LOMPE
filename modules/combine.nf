@@ -26,6 +26,7 @@ process sort_zip {
 
 
 process combine {
+    tag "${params.style}:${params.sample_id}:SVDB"
     input:
     path(sniff_vcf)
     path(pytor)

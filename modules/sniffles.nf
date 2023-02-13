@@ -5,12 +5,12 @@ call SVs using sniffles
 */
 
 process sniff {
-    
+    tag "${params.style}:${params.sample_id}:sniffles"
 
     input:
     path(bam)
     path(bai)
-    
+
     output:
     path "${bam.baseName}.sniffles.vcf", emit: sniff_vcf
 

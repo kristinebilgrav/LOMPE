@@ -32,6 +32,9 @@ else {
     println('input error, takes csv samplesheet, bam file or folder with gzipped fastq files')
 }
 
+String path = params.input
+params.sample_id = path.tokenize('/')[-1]
+
 log.info """\
 LOng-read Multiomic PipelinE
 ----------------------------
@@ -48,13 +51,13 @@ if (!params.input.endsWith('bam'))
     include {cat ; align} from './modules/align'
 
 //include ont methylation annotation
-if (params.style == 'ont') 
+if (params.style == 'ont') {
     include { meth_index ; meth_polish ; call_meth} from './modules/nanopolish'
     include { bamindex as index_methbam } from './modules/phase'
-    
-else if ( params.input.endsWith('bam'))
+}    
+else if ( params.input.endsWith('bam')){
     include { cpg_tools } from './modules/cpg_tools'
-
+}
 
 include { combine } from './modules/combine'
 include { sniff } from './modules/sniffles'
@@ -88,14 +91,12 @@ workflow ont {
     bamindex(phase_it.out.phased_bam)
 
     //add methylation info to bam
-    fast5_folder = "${sample_channel}/fast5*"
-    meth_index( fast5_folder, cat.out.fastq_file )
+    meth_index( sample_channel, cat.out.fastq_file )
     meth_polish(cat.out.fastq_file, phase_it.out.phased_bam, bamindex.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
     index_methbam(meth_polish.out.methylation_bam)
 
     //extract phased methylation
-    call_meth(meth_polish.out.methylation_bam, index_methbam.out.bai)
-
+    call_meth(cat.out.fastq_file, meth_polish.out.methylation_bam, index_methbam.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb)
 
     //SV calling
     sniff(meth_polish.out.methylation_bam, index_methbam.out.bai)
@@ -130,7 +131,7 @@ workflow pb_fastq {
     annotate_snvs(filter_snvs.out.snv_filtered)
 
     //phasing
-    phase_it(align.out.bam, align.out.bai, annotate_snvs.out)
+    phase_it(align.out.bamfile, align.out.baifile, annotate_snvs.out)
     bamindex(phase_it.out.phased_bam)
 
     //SV calling
@@ -192,7 +193,6 @@ workflow {
     
     if (params.style == 'pb') 
         if (params.input.endsWith('bam')){
-            println('starting pb bam channel')
             pb_bam(sample_channel)
         }
         else {

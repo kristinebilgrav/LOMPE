@@ -5,7 +5,7 @@ alignment of fastq files using minimap2
 */
 
 process cat {
-
+    tag "${params.style}:${params.sample_id}:cat"
 
     cpus 2
     time '2h'
@@ -15,19 +15,18 @@ process cat {
     path(fq_folder)
 
     output:
-    path "${sample_id}.fastq.gz", emit: fastq_file
+    path "${params.sample_id}.fastq.gz", emit: fastq_file
 
     script:
-    String path = fq_folder 
-    sample_id = path.tokenize('/')[-1]
+
     """ 
-    zcat ${fq_folder}/fastq_pass/*gz > ${sample_id}.fastq
-    gzip ${sample_id}.fastq
+    zcat ${fq_folder}/fastq_pass/*gz > ${params.sample_id}.fastq
+    gzip ${params.sample_id}.fastq
     """
 }
 
 process align {
-
+    tag "${params.style}:${params.sample_id}:align"
 
     input:
     path(fastq)

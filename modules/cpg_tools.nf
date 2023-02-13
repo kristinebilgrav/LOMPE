@@ -6,6 +6,7 @@ output methylation from bamfile to readable file
 
 process cpg_tools  {
     publishDir params.output, mode: 'copy'
+    tag "${params.style}:${params.sample_id}:cpg-tools"
 
     input:
     path(bam)

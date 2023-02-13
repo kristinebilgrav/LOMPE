@@ -1,7 +1,8 @@
 
 
 process bcf_snv {
-   
+    tag "${params.style}:${params.sample_id}:bcftools"
+
     errorStrategy 'ignore'
 
     input:
@@ -25,6 +26,7 @@ process bcf_snv {
 }
 
 process filter_snvs {
+    tag "${params.style}:${params.sample_id}:filter_snv"
     publishDir params.output, mode:'copy'
     errorStrategy 'ignore'
 

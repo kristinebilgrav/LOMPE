@@ -5,10 +5,8 @@ call methylation analysis using nanopolish
 */
 
 process meth_index {
+    tag "${params.style}:${params.sample_id}:nanopolish_index"
     publishDir params.output, mode: 'copy'
-    cpus 6
-    time '42h'
-    container = 'quay.io/biocontainers/nanopolish'
 
     input:
     path(fast5_folder)
@@ -24,18 +22,14 @@ process meth_index {
 
     script:
     """
-    nanopolish index -d ${fast5_folder}/ ${fastq_file}
+    nanopolish index -d ${fast5_folder}/fast5_pass/ ${fastq_file}
     """
 }
 
 
 process meth_polish {
+    tag "${params.style}:${params.sample_id}:nanopolish_call(bam)"
     publishDir params.output, mode: 'copy'
-    beforeScript 'module load hdf5'
-    container = 'quay.io/biocontainers/nanopolish'
-
-    cpus 16
-    time '42h'
 
     input:
     path(fastq_file)
@@ -57,6 +51,9 @@ process meth_polish {
 }
 
 process call_meth {
+    tag "${params.style}:${params.sample_id}:nanopolish_call(tsv)"
+    publishDir params.output, mode: 'copy'
+
     input:
     path(fastq_file)
     path(bam)
@@ -68,7 +65,7 @@ process call_meth {
 
     output:
     path "${bam.baseName}.methylsites.tsv", emit: methylation_tsv
-    ptah "${bam.baseName}.methylfrequency.tsv", emit: methylation_frequency
+    path "${bam.baseName}.methylfrequency.tsv", emit: methylation_frequency
 
     script:
     """

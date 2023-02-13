@@ -6,6 +6,7 @@ filter using DB and SVDB
 
 
 process query {
+    tag "${params.style}:${params.sample_id}:SVDB"
     input:
     path(combined)
 
@@ -25,6 +26,7 @@ process query {
 }
 
 process filter_query {
+    tag "${params.style}:${params.sample_id}:filter"
     publishDir params.output, mode: 'copy'
 
     input:

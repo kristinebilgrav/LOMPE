@@ -25,10 +25,9 @@ FastQC, picard
 
 # Install
 
-Dependencies:
-Nextflow version 21.10.6
-
-python3
+Dependencies: \n
+Nextflow version 21.10.6 \n
+python3 \n
 
 Docker or singularity
 

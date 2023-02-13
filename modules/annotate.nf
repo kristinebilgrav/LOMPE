@@ -5,7 +5,7 @@ annotate SV calls from sniffles
 */
 
 process run_vep {
-  publishDir params.output, mode: 'copy'
+  tag "${params.style}:${params.sample_id}:vep"
 
   input:
   path(queried)
@@ -22,7 +22,7 @@ process run_vep {
 
 process annotate_snvs {
   publishDir params.output, mode: 'copy'
-
+  tag "${params.style}:${params.sample_id}:vepSNV"
 
   cpus 4
   time '3h'

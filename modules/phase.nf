@@ -5,6 +5,7 @@ phase genome
 */
 
 process phase_it {
+    tag "${params.style}:${params.sample_id}:phase"
     publishDir params.output, mode: 'copy'
 
     input:
@@ -30,6 +31,7 @@ process phase_it {
 }
 
 process bamindex {
+    tag "${params.style}:${params.sample_id}:index"
     publishDir params.output, mode: 'copy'
     cpus 8
     time '2h'
