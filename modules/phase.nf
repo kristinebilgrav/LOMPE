@@ -5,19 +5,17 @@ phase genome
 */
 
 process phase_it {
-    tag "${params.style}:${params.sample_id}:phase"
+    tag "${params.style}:${SampleID}:phase"
     publishDir params.output, mode: 'copy'
 
     input:
-    path(bam)
-    path(baifile)
-    path(annotated_snv_vcf)
+    tuple val(SampleID), file(bamfile), file(baifile), file(annotated_snv_vcf)
 
 
     output:
-    path "${bam.baseName}.phased.vcf.gz", emit: phased_vcf
-    path "${bam.baseName}.phased.vcf.gz.tbi", emit: phased_vcf_tbi
-    path "${bam.baseName}.haplotagged.bam", emit: phased_bam
+    tuple val(SampleID),  file("${bam.baseName}.phased.vcf.gz"), emit: phased_vcf
+    tuple val(SampleID), file("${bam.baseName}.phased.vcf.gz.tbi"), emit: phased_vcf_tbi
+    tuple val(SampleID), file("${bam.baseName}.haplotagged.bam"), emit: phased_bam
 
 
     script:
@@ -31,19 +29,17 @@ process phase_it {
 }
 
 process bamindex {
-    tag "${params.style}:${params.sample_id}:index"
+    tag "${params.style}:${SamplID}:index"
     publishDir params.output, mode: 'copy'
-    cpus 8
-    time '2h'
 
     input:
-    path(bam)
+    tuple val(SampleID), file(bamfile)
 
     output:
-    path "${bam.baseName}.bam.bai", emit: bai
+    tuple val(SampleID), file(bamfile), file("${bam.baseName}.bam.bai")
 
     script:
     """
-    samtools index -@ ${task.cpus} ${bam}
+    samtools index -@ ${task.cpus} ${bamfile}
     """
 }

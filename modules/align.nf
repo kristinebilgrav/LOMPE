@@ -5,35 +5,32 @@ alignment of fastq files using minimap2
 */
 
 process cat {
-    tag "${params.style}:${params.sample_id}:cat"
-
-    cpus 2
-    time '2h'
+    tag "${params.style}:${SampleID}:cat" 
 
     input:
-    //path fq_files
-    path(fq_folder)
+
+    tuple val(SampleID), file(fq_folder)
+ 
 
     output:
-    path "${params.sample_id}.fastq.gz", emit: fastq_file
+    tuple val(SampleID), file("${params.sample_id}.fastq.gz") , emit: fastq_file
 
     script:
 
     """ 
-    zcat ${fq_folder}/fastq_pass/*gz > ${params.sample_id}.fastq
-    gzip ${params.sample_id}.fastq
+    zcat ${fq_folder}/fastq*/*gz > ${SampleID}.fastq
+    gzip ${SampleID}.fastq
     """
 }
 
 process align {
-    tag "${params.style}:${params.sample_id}:align"
+    tag "${params.style}:${SampleID}:align"
 
     input:
-    path(fastq)
+    tuple val(SampleID), file(fastq)
 
     output:
-    path "${fastq.baseName}.bam", emit: bamfile
-    path "${fastq.baseName}.bam.bai", emit: baifile
+    tuple val(SampleID), file( "${fastq.baseName}.bam"), file( "${fastq.baseName}.bam.bai")
 
     script: 
     """

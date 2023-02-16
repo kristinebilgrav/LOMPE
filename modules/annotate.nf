@@ -5,13 +5,13 @@ annotate SV calls from sniffles
 */
 
 process run_vep {
-  tag "${params.style}:${params.sample_id}:vep"
+  tag "${params.style}:${SampleID}:vep"
 
   input:
-  path(queried)
+  tuple val(SampleID), file(queried)
 
   output:
-  path "${queried.baseName}.VEP.vcf", emit: annotated_vcf
+  tuple val(SampleID),  file("${queried.baseName}.VEP.vcf"), emit: annotated_vcf
 
   script:
   """
@@ -21,17 +21,14 @@ process run_vep {
 }
 
 process annotate_snvs {
-  publishDir params.output, mode: 'copy'
-  tag "${params.style}:${params.sample_id}:vepSNV"
-
-  cpus 4
-  time '3h'
+  publishDir "${params.output}/${SampleID}/", mode: 'copy'
+  tag "${params.style}:${SampleID}:vepSNV"
 
   input:
-  path(snv_filtered)
+  tuple val(SampleID), file(snv_filtered)
 
   output: 
-  path "${snv_filtered.baseName}.VEP.vcf", emit: annotated_snv_vcf
+  tuple val(SampleID), file("${snv_filtered.baseName}.VEP.vcf"), emit: annotated_snv_vcf
 
   script:
   """

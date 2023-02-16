@@ -8,10 +8,10 @@ process picard {
     publishDir params.output, mode:'copy'
 
     input:
-    path(bam)
+    tuple val(SampleID), file(bam), file(bai)
 
     output:
-    path "${bam.baseName}.wgsmetrics.txt"
+    tuple val(SampleID), file("${bam.baseName}.wgsmetrics.txt")
     
     shell:
     """

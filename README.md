@@ -25,9 +25,11 @@ FastQC, picard
 
 # Install
 
-Dependencies: \n
-Nextflow version 21.10.6 \n
-python3 \n
+Dependencies: 
+
+Nextflow version 21.10.6
+
+python3 
 
 Docker or singularity
 
@@ -45,21 +47,18 @@ edit config to your needs
 
 # RUN
     nextflow run main.nf -c < config > 
-    --input < folder containing 'fastq_pass' folder with fastq files/ samplesheet / bam (annotation and methylation calling from pb bam file) > 
-    --output < pathto/output/folder>
+    --input < folder containing 'fastq_pass' folder with fastq files/ samplesheet with folder paths or bam paths (pb) / bam (annotation and methylation calling from pb bam file) > 
+    --output < pathto/output/folder> will generate pathto/output/folder/SampleID_out
     --style < ont OR pb>   -with-trace 
+    --file < 'fastq' or 'bam' only needed for pb samples>
 
-
-sample ID is detected from the folder given; path/to/mySample/ will generate sample ID mySample
 
 for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder
 
-the samplesheet.csv need to contain a column called SamplePath with the folder path
+the samplesheet.csv need to contain a column called SamplePath with the folder or bam path and one with the sample id called SampleID
 
 Input:
-
 nanopore: folder containing fastq_pass and fast5_pass folders with fastq.gz / fast5 
-
 pacbio: folder containing fastq_pass with fastq.gz OR bam file
 
 Methylation annotation of bam:

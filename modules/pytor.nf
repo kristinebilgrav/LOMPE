@@ -5,16 +5,13 @@ call CNVs using pytor
 */
 
 process pytor {
-    tag "${params.style}:${params.sample_id}:CNVpytor"
+    tag "${params.style}:${SampleID}:CNVpytor"
 
     input:
-    path(bam)
-    path(bai)
-    path(snvfile)
+    tuple val(SampleID), file(bam), file(bai), file(snvfile)
 
     output:
-    path "${bam.baseName}.pytor.vcf", emit: pytor_vcffile
-    path "${bam.baseName}.pytor.out", emit: pytor_outfile
+    tuple val(SampleID), file("${bam.baseName}.pytor.vcf"), file("${bam.baseName}.pytor.out") 
 
     script:
     """

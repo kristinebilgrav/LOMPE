@@ -6,12 +6,13 @@ filter using DB and SVDB
 
 
 process query {
-    tag "${params.style}:${params.sample_id}:SVDB"
+    tag "${params.style}:${SampleID}:SVDB"
+
     input:
-    path(combined)
+    tuple val(SampleID), file(combined)
 
     output:
-    path "${combined.baseName}.query.vcf"
+    tuple val(SampleID), file("${combined.baseName}.query.vcf")
 
     script:
     if (params.style == 'pb') 
@@ -26,14 +27,14 @@ process query {
 }
 
 process filter_query {
-    tag "${params.style}:${params.sample_id}:filter"
+    tag "${params.style}:${SampleID}:filter"
     publishDir params.output, mode: 'copy'
 
     input:
-    path(queried)
+    tuple val(SampleID), file(queried)
 
     output:
-    path "${queried.baseName}.filtered.vcf", emit: filtered
+    tuple val(SampleID), file("${queried.baseName}.filtered.vcf"), emit: filtered
 
     script:
     """

@@ -1,15 +1,16 @@
 
 
 process bcf_snv {
-    tag "${params.style}:${params.sample_id}:bcftools"
+    tag "${params.style}:${SampleID}:bcftools"
 
     errorStrategy 'ignore'
 
     input:
-    path(bam)
+    tuple val(SampleID), file(bam), file(bai)
+
 
     output:
-    path "${bam.baseName}.snv.vcf", emit: snvfile
+    tuple val(SampleID), file("${bam.baseName}.snv.vcf"), emit: snvfile
 
 
     script:
@@ -26,15 +27,15 @@ process bcf_snv {
 }
 
 process filter_snvs {
-    tag "${params.style}:${params.sample_id}:filter_snv"
+    tag "${params.style}:${SampleID}:filter_snv"
     publishDir params.output, mode:'copy'
     errorStrategy 'ignore'
 
     input:
-    path(snvfile)
+    tuple val(SampleID), file(snvfile)
 
     output:
-    path "${snvfile.baseName}.filter.vcf", emit: snv_filtered
+    tuple val(SampleID), file("${snvfile.baseName}.filter.vcf"), emit: snv_filtered
 
     script:
     """

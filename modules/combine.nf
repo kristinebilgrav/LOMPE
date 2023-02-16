@@ -26,14 +26,15 @@ process sort_zip {
 
 
 process combine {
-    tag "${params.style}:${params.sample_id}:SVDB"
+    tag "${params.style}:${SampleID}:SVDB"
+
     input:
-    path(sniff_vcf)
-    path(pytor)
+    tuple val(SampleID), file(sniff_vcf), file(pytor)
+
 
 
     output:
-    path "${sniff_vcf.simpleName}.output.vcf", emit: combined
+    tuple val(SampleID),  file("${sniff_vcf.simpleName}.output.vcf"), emit: combined
 
     script:
     """

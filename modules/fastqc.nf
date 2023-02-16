@@ -5,19 +5,19 @@ fastQC
 */
 
 process fastqc {
-    tag "${params.style}:${params.sample_id}:fastQC"
-    
+    tag "${params.style}:${SampleID}:fastQC"
+
     publishDir params.output, mode: 'copy'
 
     input:
-    path(fastq_file)
+    tuple val(SampleID), file(fastq_file)
 
     output:
-    path "${params.sample_id}.fastQC.out/*", emit: QC
+    tuple val(SampleID), file("${params.sample_id}.fastQC.out/*"), emit: QC
 
     script:
     """
-    mkdir ${params.sample_id}.fastQC.out && 
-    fastqc --threads 16 -o ${params.sample_id}.fastQC.out ${fastq_file}
+    mkdir ${SampleID}.fastQC.out && 
+    fastqc --threads 16 -o ${SampleID}.fastQC.out ${fastq_file}
     """
 }

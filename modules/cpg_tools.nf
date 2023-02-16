@@ -6,15 +6,14 @@ output methylation from bamfile to readable file
 
 process cpg_tools  {
     publishDir params.output, mode: 'copy'
-    tag "${params.style}:${params.sample_id}:cpg-tools"
+    tag "${params.style}:${SampleID}:cpg-tools"
 
     input:
-    path(bam)
-    path(bai)
+    tuple val(SampleID), file(bam), file(bai)
+
 
     output:
-    path "${bam.baseName}*bed", emit: methyl_sites
-    path "${bam.baseName}.*bw", emit: methyl_bwtrack
+    tuple val(SampleID),  file("${bam.baseName}*bed"), file("${bam.baseName}.*bw"), emit: methyl_sites
 
     script:
     """

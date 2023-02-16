@@ -8,42 +8,38 @@ nextflow.enable.dsl = 2
 
 
 
-if ( params.input.endsWith('csv') ) {
+if ( params.input.endsWith('csv') ) { 
     Channel
         .fromPath(params.input)
         .splitCsv(header: true)
-        .map{ row ->  "${row.SamplePath}"  }
+        .map{ row ->  tuple(row.SampleID, file(row.SamplePath))  }
         .set{sample_channel}
 
 }
 else if (params.input.endsWith('bam')) {
+    String path = params.input 
+    SampleID = path.tokenize('/')[-1].tokenize('.')[0]
     Channel
         .fromPath(params.input)
-        .set{sample_channel}
+        .set{tuple(SampleID, sample_channel)}
         //begin at annotion
 }
 
 else if (new File(params.input).exists()){
+
+    String path = params.input 
+    SampleID = path.tokenize('/')[-1]
+
     Channel
         .fromPath(params.input)
-        .set{sample_channel}
+        .set{tuple(SampleID,sample_channel)}
 }
 else {
     println('input error, takes csv samplesheet, bam file or folder with gzipped fastq files')
 }
 
-String path = params.input
-params.sample_id = path.tokenize('/')[-1]
+//
 
-log.info """\
-LOng-read Multiomic PipelinE
-----------------------------
-input : ${params.input}
-sample_id : ${params.sample_id}
-output :  ${params.output}
-style : ${params.style}
-
-"""
 
 
 // include modules
@@ -55,7 +51,7 @@ if (params.style == 'ont') {
     include { meth_index ; meth_polish ; call_meth} from './modules/nanopolish'
     include { bamindex as index_methbam } from './modules/phase'
 }    
-else if ( params.input.endsWith('bam')){
+else if ( params.style == 'pb'){
     include { cpg_tools } from './modules/cpg_tools'
 }
 
@@ -77,37 +73,45 @@ workflow ont {
 
     main:
     cat(sample_channel)
-    align(cat.out.fastq_file)
+    aligned_bam_bai_channel = align(cat.out.fastq_file)
     
     //SNV calling 
-    bcf_snv(align.out.bamfile)
+    bcf_snv(aligned_bam_bai_channel)
     filter_snvs(bcf_snv.out)
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out.snv_filtered)
 
     //phasing
-    phase_it(align.out.bamfile, align.out.baifile, annotate_snvs.out)
-    bamindex(phase_it.out.phased_bam)
+    bam_snv_channel = aligned_bam_bai_channel.join(annotate_snvs.out) //join
+    phase_it(bam_snv_channel)
+    phased_bam_bai_channel = bamindex(phase_it.out.phased_bam) //may have to join seperatly
 
     //add methylation info to bam
-    meth_index( sample_channel, cat.out.fastq_file )
-    meth_polish(cat.out.fastq_file, phase_it.out.phased_bam, bamindex.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
-    index_methbam(meth_polish.out.methylation_bam)
+    index_channel = sample_channel.join(cat.out) //join
+    index_files = meth_index( index_channel )
+    call_methylation_channel = phased_bam_bai_channel.join(index_files) //join 
+    meth_polish(call_methylation_channel)
+    //meth_polish(cat.out.fastq_file, phase_it.out.phased_bam, bamindex.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
+    methylation_bam_bai_channel = index_methbam(meth_polish.out.methylation_bam)
 
     //extract phased methylation
-    call_meth(cat.out.fastq_file, meth_polish.out.methylation_bam, index_methbam.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb)
+    call_meth(call_methylation_channel)
+    //call_meth(cat.out.fastq_file, meth_polish.out.methylation_bam, index_methbam.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb)
 
     //SV calling
-    sniff(meth_polish.out.methylation_bam, index_methbam.out.bai)
-    pytor(meth_polish.out.methylation_bam, index_methbam.out.bai, bcf_snv.out.snvfile)
-    combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile)
+    //join unless meth channel works
+    sniff(methylation_bam_bai_channel)
+    pytor_in_channel = methylation_bam_bai_channel.join(bcf_snv.out)//join
+    pytor(pytor_in_channel)
+    combine_channel = sniff.out.join(pytor.out) //join
+    combine(combine_channel)
     run_vep(combine.out)
     query(run_vep.out)
     filter_query(query.out)
 
     //QC
-    picard(align.out.bamfile)
+    picard(align.out)
     fastqc(cat.out.fastq_file)
     
 
@@ -119,25 +123,27 @@ workflow pb_fastq {
     take: sample_channel
 
     main:
-    //fastq_folder = Channel.fromPath("${params.fastq_folder}/*gz").collect()
     cat(sample_channel)
-    align(cat.out.fastq_file)
-
-    //SNV calling
-    bcf_snv(align.out.bamfile)
+    aligned_bam_bai_channel = align(cat.out.fastq_file)
+    
+    //SNV calling 
+    bcf_snv(aligned_bam_bai_channel)
     filter_snvs(bcf_snv.out)
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out.snv_filtered)
 
     //phasing
-    phase_it(align.out.bamfile, align.out.baifile, annotate_snvs.out)
-    bamindex(phase_it.out.phased_bam)
+    bam_snv_channel = aligned_bam_bai_channel.join(annotate_snvs.out) //join
+    phase_it(bam_snv_channel)
+    phased_bam_bai_channel = bamindex(phase_it.out.phased_bam) //may have to join seperatly
 
     //SV calling
-    sniff(phase_it.out.phased_bam, bamindex.out)
-    pytor(phase_it.out.phased_bam, bamindex.out.bai, bcf_snv.out.snvfile)
-    combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile )
+    sniff(phased_bam_bai_channel)
+    pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
+    pytor(pytor_in_channel)
+    combine_channel = sniff.out.join(pytor.out) //join
+    combine(combine_channel )
     run_vep(combine.out)
 
     query(run_vep.out)
@@ -153,26 +159,27 @@ workflow pb_bam {
     take: sample_channel
 
     main:
-    //SNV calling
+    //SNV calling 
     bcf_snv(sample_channel)
     filter_snvs(bcf_snv.out)
 
     //SNV annotate 
-    annotate_snvs(filter_snvs.out.snv_filtered)
+    annotate_snvs(filter_snvs.out)
 
     //phasing
-    bai = "${sample_channel}.bai"
-    phase_it(sample_channel, bai , annotate_snvs.out)
-    bamindex(phase_it.out.phased_bam)
+    bam_snv_channel = sample_channel.join(annotate_snvs.out) //join
+    phase_it(bam_snv_channel)
+    phased_bam_bai_channel = bamindex(phase_it.out) //may have to join seperatly
 
     //extract methylation from bam
-    cpg_tools(phase_it.out.phased_bam, bamindex.out.bai)
-
+    cpg_tools(phased_bam_bai_channel)
 
     //SV calling
-    sniff(phase_it.out.phased_bam, bamindex.out.bai)
-    pytor(phase_it.out.phased_bam, bamindex.out.bai, bcf_snv.out.snvfile)
-    combine(sniff.out.sniff_vcf, pytor.out.pytor_vcffile )
+    sniff(phased_bam_bai_channel)
+    pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
+    pytor(pytor_in_channel)
+    combine_channel = sniff.out.join(pytor.out) //join
+    combine(combine_channel )
     run_vep(combine.out)
 
     query(run_vep.out)
@@ -188,18 +195,35 @@ workflow {
 
     main:
     if (params.style == 'ont') 
+        println('ONT workflow starting')
+        sample_channel.view()
         ont(sample_channel)
-    //    ont("${params.fastq_folder}")
+
     
-    if (params.style == 'pb') 
-        if (params.input.endsWith('bam')){
+    if (params.style == 'pb')
+        
+        sample_channel.view() 
+        if (params.file == 'bam'){
+            println('PB workflow starting from BAM')
             pb_bam(sample_channel)
         }
         else {
+            println('PB workflow starting from fastq')
             pb_fastq(sample_channel)
         }
     
 }
+
+
+log.info """\
+LOng-read Multiomic PipelinE
+----------------------------
+input : folder
+sample_id : sample
+output :  ${params.output}
+style : ${params.style}
+
+"""
 
 //completion handler
 workflow.onComplete {

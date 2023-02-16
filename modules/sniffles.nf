@@ -5,14 +5,13 @@ call SVs using sniffles
 */
 
 process sniff {
-    tag "${params.style}:${params.sample_id}:sniffles"
+    tag "${params.style}:${SampleID}:sniffles"
 
     input:
-    path(bam)
-    path(bai)
+    tuple val(SampleID), file(bam), file(bai)
 
     output:
-    path "${bam.baseName}.sniffles.vcf", emit: sniff_vcf
+    tuple val(SampleID), file("${bam.baseName}.sniffles.vcf"), emit: sniff_vcf
 
 
     shell:

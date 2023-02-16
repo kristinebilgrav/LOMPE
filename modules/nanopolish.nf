@@ -5,43 +5,33 @@ call methylation analysis using nanopolish
 */
 
 process meth_index {
-    tag "${params.style}:${params.sample_id}:nanopolish_index"
+    tag "${params.style}:${SampleID}:nanopolish_index"
     publishDir params.output, mode: 'copy'
 
     input:
-    path(fast5_folder)
-    path(fastq_file)
+    tuple val(SampleID), file(samplefolder), file(fastq_file)
     
 
     output:
-    path "${fastq_file}.index", emit: polish_index
-    path "${fastq_file}.index.fai", emit: polish_index_fai
-    path "${fastq_file}.index.gzi", emit: polish_index_gzi
-    path "${fastq_file}.index.readdb", emit: polish_index_readdb
-    
+    tuple val(SampelID), file("${fastq_file}.index"), file("${fastq_file}.index.fai"), file("${fastq_file}.index.gzi"), file("${fastq_file}.index.readdb")
+
 
     script:
     """
-    nanopolish index -d ${fast5_folder}/fast5_pass/ ${fastq_file}
+    nanopolish index -d ${samplefolder}/fast5_pass/ ${fastq_file}
     """
 }
 
 
 process meth_polish {
-    tag "${params.style}:${params.sample_id}:nanopolish_call(bam)"
+    tag "${params.style}:${SampleID}:nanopolish_call(bam)"
     publishDir params.output, mode: 'copy'
 
     input:
-    path(fastq_file)
-    path(bam)
-    path(bai)
-    path(polish_index)
-    path(polish_index_fai)
-    path(polish_index_gzi)
-    path(polish_index_readdb)
+    tuple val(SampleID), file(fastq_file), file(bam), file(bai), file(polish_index), file(polish_index_fai), file(polish_index_gzi), file(polish_index_readdb)
 
     output:
-    path "${bam.baseName}.methyl.bam", emit: methylation_bam
+    tuple val(SampleID),  file("${bam.baseName}.methyl.bam"), emit: methylation_bam
 
     script:
     """
@@ -51,21 +41,14 @@ process meth_polish {
 }
 
 process call_meth {
-    tag "${params.style}:${params.sample_id}:nanopolish_call(tsv)"
+    tag "${params.style}:${SampleID}:nanopolish_call(tsv)"
     publishDir params.output, mode: 'copy'
 
     input:
-    path(fastq_file)
-    path(bam)
-    path(bai)
-    path(polish_index)
-    path(polish_index_fai)
-    path(polish_index_gzi)
-    path(polish_index_readdb)
+    tuple val(SampleID), file(fastq_file), file(bam), file(bai), file(polish_index), file(polish_index_fai), file(polish_index_gzi), file(polish_index_readdb)
 
     output:
-    path "${bam.baseName}.methylsites.tsv", emit: methylation_tsv
-    path "${bam.baseName}.methylfrequency.tsv", emit: methylation_frequency
+    tuple val(SampleID), file("${bam.baseName}.methylsites.tsv"), file("${bam.baseName}.methylfrequency.tsv")
 
     script:
     """
