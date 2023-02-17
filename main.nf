@@ -195,7 +195,7 @@ workflow pb_bam {
     filter_query(query.out)
 
     //QC
-    picard(sample_channel)
+    picard(phased_bam_bai_channel)
 
 }
 

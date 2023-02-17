@@ -5,7 +5,8 @@ picard
 */
 
 process picard {
-    publishDir "${params.output}/${SampleID}_out/" mode:'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
+    errorStrategy 'ignore'
 
     input:
     tuple val(SampleID), file(bam), file(bai)
