@@ -21,14 +21,14 @@ process bcf_snv {
         LR = 'ont'
     
     """
-    bcftools mpileup -X ${LR} --threads 4 -f ${params.ref} ${bam} --annotate FORMAT/AD,FORMAT/DP | bcftools call --threads 4 -cv -P0.01 -p 1 -Ob |bcftools filter --exclude "QUAL<=0" |bcftools filter --exclude 'GT="ref"' > ${bam.baseName}.snv.vcf 
+    bcftools mpileup -X ${LR} --threads 4 -f ${params.ref} ${bam} --annotate FORMAT/AD,FORMAT/DP | bcftools call --threads ${task.cpus} -cv -P0.01 -p 1 -Ob |bcftools filter --exclude "QUAL<=0" |bcftools filter --exclude 'GT="ref"' > ${bam.baseName}.snv.vcf 
 
     """
 }
 
 process filter_snvs {
     tag "${params.style}:${SampleID}:filter_snv"
-    publishDir params.output, mode:'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode:'copy'
     errorStrategy 'ignore'
 
     input:

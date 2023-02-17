@@ -28,7 +28,7 @@ process query {
 
 process filter_query {
     tag "${params.style}:${SampleID}:filter"
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     tuple val(SampleID), file(queried)

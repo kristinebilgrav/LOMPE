@@ -5,7 +5,7 @@ combine variant calls
 */
 
 process sort_zip {
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     path(vcf)

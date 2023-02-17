@@ -9,13 +9,23 @@ nextflow.enable.dsl = 2
 
 
 if ( params.input.endsWith('csv') ) { 
-    Channel
+    if (params.style == 'pb' && params.file == 'bam') {
+        Channel
+            .fromPath(params.input)
+            .splitCsv(header: true)
+            .map{ row ->  tuple(row.SampleID, file(row.SamplePath), file(row.SampleIndex))  }
+            .set{sample_channel}
+    }
+    else {
+        Channel
         .fromPath(params.input)
         .splitCsv(header: true)
         .map{ row ->  tuple(row.SampleID, file(row.SamplePath))  }
         .set{sample_channel}
-
+    }
+    
 }
+
 else if (params.input.endsWith('bam')) {
     String path = params.input 
     SampleID = path.tokenize('/')[-1].tokenize('.')[0]
@@ -43,7 +53,7 @@ else {
 
 
 // include modules
-if (!params.input.endsWith('bam'))
+if (params.file != 'bam')
     include {cat ; align} from './modules/align'
 
 //include ont methylation annotation
@@ -90,15 +100,14 @@ workflow ont {
     //add methylation info to bam
     index_channel = sample_channel.join(cat.out) //join
     index_files = meth_index( index_channel )
-    call_methylation_channel = phased_bam_bai_channel.join(index_files) //join 
+    fastq_bam = cat.out.join(phased_bam_bai_channel)
+    call_methylation_channel = fastq_bam.join(index_files) //join 
     meth_polish(call_methylation_channel)
-    //meth_polish(cat.out.fastq_file, phase_it.out.phased_bam, bamindex.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb )
     methylation_bam_bai_channel = index_methbam(meth_polish.out.methylation_bam)
 
     //extract phased methylation
     call_meth(call_methylation_channel)
-    //call_meth(cat.out.fastq_file, meth_polish.out.methylation_bam, index_methbam.out.bai, meth_index.out.polish_index, meth_index.out.polish_index_fai, meth_index.out.polish_index_gzi, meth_index.out.polish_index_readdb)
-
+   
     //SV calling
     //join unless meth channel works
     sniff(methylation_bam_bai_channel)
@@ -112,7 +121,7 @@ workflow ont {
 
     //QC
     picard(align.out)
-    fastqc(cat.out.fastq_file)
+    fastqc(cat.out)
     
 
 
@@ -150,8 +159,8 @@ workflow pb_fastq {
     filter_query(query.out)
 
     //QC
-//    picard(align.out.bamfile)
- //   fastqc(cat.out.fastq_file)
+    picard(align.out)
+    fastqc(cat.out)
     
 }
 
@@ -169,7 +178,7 @@ workflow pb_bam {
     //phasing
     bam_snv_channel = sample_channel.join(annotate_snvs.out) //join
     phase_it(bam_snv_channel)
-    phased_bam_bai_channel = bamindex(phase_it.out) //may have to join seperatly
+    phased_bam_bai_channel = bamindex(phase_it.out.phased_bam) //may have to join seperatly
 
     //extract methylation from bam
     cpg_tools(phased_bam_bai_channel)
@@ -186,40 +195,42 @@ workflow pb_bam {
     filter_query(query.out)
 
     //QC
-//    picard(sample_channel)
+    picard(sample_channel)
 
 }
 
 //main workflow
 workflow {
-
-    main:
-    if (params.style == 'ont') 
+    if (params.style == 'ont') {
         println('ONT workflow starting')
         sample_channel.view()
+        main:
         ont(sample_channel)
 
-    
-    if (params.style == 'pb')
+    }
         
+    else if (params.style == 'pb') {
         sample_channel.view() 
         if (params.file == 'bam'){
             println('PB workflow starting from BAM')
+            main:
             pb_bam(sample_channel)
         }
+
         else {
             println('PB workflow starting from fastq')
+            main:
             pb_fastq(sample_channel)
         }
-    
+    }
+   
 }
 
 
 log.info """\
 LOng-read Multiomic PipelinE
 ----------------------------
-input : folder
-sample_id : sample
+input : ${params.input}
 output :  ${params.output}
 style : ${params.style}
 

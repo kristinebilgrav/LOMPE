@@ -6,14 +6,14 @@ call methylation analysis using nanopolish
 
 process meth_index {
     tag "${params.style}:${SampleID}:nanopolish_index"
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     tuple val(SampleID), file(samplefolder), file(fastq_file)
     
 
     output:
-    tuple val(SampelID), file("${fastq_file}.index"), file("${fastq_file}.index.fai"), file("${fastq_file}.index.gzi"), file("${fastq_file}.index.readdb")
+    tuple val(SampleID), file("${fastq_file}.index"), file("${fastq_file}.index.fai"), file("${fastq_file}.index.gzi"), file("${fastq_file}.index.readdb")
 
 
     script:
@@ -25,7 +25,7 @@ process meth_index {
 
 process meth_polish {
     tag "${params.style}:${SampleID}:nanopolish_call(bam)"
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     tuple val(SampleID), file(fastq_file), file(bam), file(bai), file(polish_index), file(polish_index_fai), file(polish_index_gzi), file(polish_index_readdb)
@@ -42,7 +42,7 @@ process meth_polish {
 
 process call_meth {
     tag "${params.style}:${SampleID}:nanopolish_call(tsv)"
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     tuple val(SampleID), file(fastq_file), file(bam), file(bai), file(polish_index), file(polish_index_fai), file(polish_index_gzi), file(polish_index_readdb)

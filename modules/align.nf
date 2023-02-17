@@ -13,7 +13,7 @@ process cat {
  
 
     output:
-    tuple val(SampleID), file("${params.sample_id}.fastq.gz") , emit: fastq_file
+    tuple val(SampleID), file("${SampleID}.fastq.gz") , emit: fastq_file
 
     script:
 
@@ -30,11 +30,11 @@ process align {
     tuple val(SampleID), file(fastq)
 
     output:
-    tuple val(SampleID), file( "${fastq.baseName}.bam"), file( "${fastq.baseName}.bam.bai")
+    tuple val(SampleID), file( "${SampleID}.bam"), file( "${SampleID}.bam.bai")
 
     script: 
     """
-    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${fastq.baseName}.bam && 
-    samtools index -@ ${task.cpus} ${fastq.baseName}.bam
+    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${SampleID}.bam && 
+    samtools index -@ ${task.cpus} ${SampleID}.bam
     """
 }

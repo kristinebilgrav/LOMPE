@@ -21,7 +21,7 @@ process run_vep {
 }
 
 process annotate_snvs {
-  publishDir "${params.output}/${SampleID}/", mode: 'copy'
+  publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
   tag "${params.style}:${SampleID}:vepSNV"
 
   input:

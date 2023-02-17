@@ -7,13 +7,13 @@ fastQC
 process fastqc {
     tag "${params.style}:${SampleID}:fastQC"
 
-    publishDir params.output, mode: 'copy'
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     tuple val(SampleID), file(fastq_file)
 
     output:
-    tuple val(SampleID), file("${params.sample_id}.fastQC.out/*"), emit: QC
+    tuple val(SampleID), file("${SampleID}.fastQC.out/*"), emit: QC
 
     script:
     """

@@ -27,7 +27,7 @@ FastQC, picard
 
 Dependencies: 
 
-Nextflow version 21.10.6
+Nextflow version 22.10.2
 
 python3 
 
@@ -55,7 +55,8 @@ edit config to your needs
 
 for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder
 
-the samplesheet.csv need to contain a column called SamplePath with the folder or bam path and one with the sample id called SampleID
+the samplesheet.csv need to contain a header: SampleID,SamplePath where rows follow with sampleid,folder/orbam/path 
+if samplesheet contains PB bam files, a column SampleIndex with bai file path is required
 
 Input:
 nanopore: folder containing fastq_pass and fast5_pass folders with fastq.gz / fast5 
