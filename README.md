@@ -50,7 +50,7 @@ edit config to your needs
     --input < folder containing 'fastq_pass' folder with fastq files/ samplesheet with folder paths or bam paths (pb) / bam (annotation and methylation calling from pb bam file) > 
     --output < pathto/output/folder> will generate pathto/output/folder/SampleID_out
     --style < ont OR pb>   -with-trace 
-    --file < 'fastq' or 'bam' only needed for pb samples>
+    --file < 'fastq' or 'bam' needed for pb samples>
 
 
 for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder

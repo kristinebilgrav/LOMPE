@@ -13,7 +13,7 @@ if ( params.input.endsWith('csv') ) {
         Channel
             .fromPath(params.input)
             .splitCsv(header: true)
-            .map{ row ->  tuple(row.SampleID, file(row.SamplePath), file(row.SampleIndex))  }
+            .map{ row ->  tuple(row.SampleID, file(row.SamplePath), file(row.SamplePath.tokenize('.')[0]+'*.bai'))  }
             .set{sample_channel}
     }
     else {
@@ -30,8 +30,9 @@ else if (params.input.endsWith('bam')) {
     String path = params.input 
     SampleID = path.tokenize('/')[-1].tokenize('.')[0]
     Channel
-        .fromPath(params.input)
-        .set{tuple(SampleID, sample_channel)}
+        .fromPath(params.input) //bai file
+        .map{tuple(SampleID, file(params.input), file(params.input.tokenize('.')[0]+'*.bai') )}
+        .set{sample_channel}
         //begin at annotion
 }
 
@@ -42,14 +43,12 @@ else if (new File(params.input).exists()){
 
     Channel
         .fromPath(params.input)
-        .set{tuple(SampleID,sample_channel)}
+        .map{tuple(SampleID, file(params.input))}
+        .set{sample_channel}
 }
 else {
     println('input error, takes csv samplesheet, bam file or folder with gzipped fastq files')
 }
-
-//
-
 
 
 // include modules
@@ -203,7 +202,6 @@ workflow pb_bam {
 workflow {
     if (params.style == 'ont') {
         println('ONT workflow starting')
-        sample_channel.view()
         main:
         ont(sample_channel)
 
