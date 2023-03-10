@@ -62,6 +62,7 @@ if (params.style == 'ont') {
 }    
 else if ( params.style == 'pb'){
     include { cpg_tools } from './modules/cpg_tools'
+    include { mdtag } from './modules/mdtag'
 }
 
 include { combine } from './modules/combine'
@@ -131,8 +132,8 @@ workflow pb_fastq {
     take: sample_channel
 
     main:
-    cat(sample_channel)
-    aligned_bam_bai_channel = align(cat.out.fastq_file)
+
+    aligned_bam_bai_channel = align(sample_channel)
     
     //SNV calling 
     bcf_snv(aligned_bam_bai_channel)
@@ -159,7 +160,7 @@ workflow pb_fastq {
 
     //QC
     picard(align.out)
-    fastqc(cat.out)
+    fastqc(sample_channel)
     
 }
 
@@ -168,14 +169,15 @@ workflow pb_bam {
 
     main:
     //SNV calling 
-    bcf_snv(sample_channel)
+    mdtag(sample_channel)
+    bcf_snv(mdtag.out)
     filter_snvs(bcf_snv.out)
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out)
 
     //phasing
-    bam_snv_channel = sample_channel.join(annotate_snvs.out) //join
+    bam_snv_channel = mdtag.out.join(annotate_snvs.out) //join
     phase_it(bam_snv_channel)
     phased_bam_bai_channel = bamindex(phase_it.out.phased_bam) //may have to join seperatly
 
@@ -186,7 +188,7 @@ workflow pb_bam {
     sniff(phased_bam_bai_channel)
     pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
     pytor(pytor_in_channel)
-    combine_channel = sniff.out.join(pytor.out) //join
+    combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
     combine(combine_channel )
     run_vep(combine.out)
 

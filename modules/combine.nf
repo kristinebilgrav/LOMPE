@@ -34,7 +34,7 @@ process combine {
 
 
     output:
-    tuple val(SampleID),  file("${sniff_vcf.simpleName}.output.vcf"), emit: combined
+    tuple val(SampleID),  file("${sniff_vcf.simpleName}.output.vcf")
 
     script:
     """

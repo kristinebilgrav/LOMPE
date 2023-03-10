@@ -6,7 +6,6 @@ fastQC
 
 process fastqc {
     tag "${params.style}:${SampleID}:fastQC"
-
     publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:

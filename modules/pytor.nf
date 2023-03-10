@@ -11,7 +11,8 @@ process pytor {
     tuple val(SampleID), file(bam), file(bai), file(snvfile)
 
     output:
-    tuple val(SampleID), file("${bam.baseName}.pytor.vcf"), file("${bam.baseName}.pytor.out") 
+    tuple val(SampleID), file("${bam.baseName}.pytor.vcf"), emit: pytor_vcf
+    tuple val(SampleID), file("${bam.baseName}.pytor.out"), emit: pytor_out 
 
     script:
     """
@@ -20,8 +21,8 @@ process pytor {
     cnvpytor -root ${bam.baseName}.pytor -his 20000 200000 
     cnvpytor -root ${bam.baseName}.pytor -partition 20000 200000 
     cnvpytor -root ${bam.baseName}.pytor -call 20000 > ${bam.baseName}.pytor.out
-    cnvpytor -root ${bam.baseName}.pytor -snp ${snvfile} -nofilter 
-    cnvpytor -root ${bam.baseName}.pytor -baf 20000 200000 
+    cnvpytor -root ${bam.baseName}.pytor -snp ${snvfile} -nofilter -j ${task.cpus}
+    cnvpytor -root ${bam.baseName}.pytor -baf 20000 200000 -j ${task.cpus}
     cnvpytor -root ${bam.baseName}.pytor -call combined 20000 > ${bam.baseName}.pytor.combined.out 
 
     

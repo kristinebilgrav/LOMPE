@@ -15,7 +15,7 @@ process run_vep {
 
   script:
   """
-  vep -i ${queried} -o ${queried.baseName}.VEP.vcf ${params.vep_args} --vcf --fork 4 --per_gene --format vcf --no_stats
+  vep -i ${queried} -o ${queried.baseName}.VEP.vcf ${params.vep_args} --fork ${task.cpus} 
   """
 
 }

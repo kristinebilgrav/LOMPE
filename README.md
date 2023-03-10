@@ -49,8 +49,9 @@ edit config to your needs
     nextflow run main.nf -c < config > 
     --input < folder containing 'fastq_pass' folder with fastq files/ samplesheet with folder paths or bam paths (pb) / bam (annotation and methylation calling from pb bam file) > 
     --output < pathto/output/folder> will generate pathto/output/folder/SampleID_out
-    --style < ont OR pb>   -with-trace 
+    --style < ont OR pb>   
     --file < 'fastq' or 'bam' needed for pb samples>
+    -with-trace
 
 
 for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder
