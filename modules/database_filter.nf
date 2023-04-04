@@ -22,7 +22,7 @@ process query {
         DB = params.ont_DB
 
     """
-    svdb --query --query_vcf ${combined} --db ${DB} --overlap -1 > ${combined.baseName}.query.vcf
+    svdb --query --query_vcf ${combined} --db ${DB}  > ${combined.baseName}.query.vcf
     """
 }
 

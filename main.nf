@@ -151,7 +151,7 @@ workflow pb_fastq {
     sniff(phased_bam_bai_channel)
     pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
     pytor(pytor_in_channel)
-    combine_channel = sniff.out.join(pytor.out) //join
+    combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
     combine(combine_channel )
     run_vep(combine.out)
 
@@ -159,7 +159,7 @@ workflow pb_fastq {
     filter_query(query.out)
 
     //QC
-    picard(align.out)
+    picard(aligned_bam_bai_channel)
     fastqc(sample_channel)
     
 }
