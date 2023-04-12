@@ -1,6 +1,5 @@
-# LOMPE
-![lompe_logo](https://user-images.githubusercontent.com/77359122/231418667-484df799-c9a6-4e0c-a691-872704068608.png)
 
+![lompe_logo](https://user-images.githubusercontent.com/77359122/231418667-484df799-c9a6-4e0c-a691-872704068608.png)
 LOng-read Multi-omics PipelinE
 
 ** Under development **
