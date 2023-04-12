@@ -113,7 +113,7 @@ workflow ont {
     sniff(methylation_bam_bai_channel)
     pytor_in_channel = methylation_bam_bai_channel.join(bcf_snv.out)//join
     pytor(pytor_in_channel)
-    combine_channel = sniff.out.join(pytor.out) //join
+    combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
     combine(combine_channel)
     run_vep(combine.out)
     query(run_vep.out)

@@ -27,6 +27,7 @@ process sort_zip {
 
 process combine {
     tag "${params.style}:${SampleID}:SVDB"
+    publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
     tuple val(SampleID), file(sniff_vcf), file(pytor)
