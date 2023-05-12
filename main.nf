@@ -52,8 +52,13 @@ else {
 
 
 // include modules
-if (params.file != 'bam')
+if (params.file != 'bam') {
     include {cat ; align} from './modules/align'
+}
+
+if (params.file == 'bam' && params.style == 'ont') {
+    include { bam2fastq ; align } from '.modules/align'
+}
 
 //include ont methylation annotation
 if (params.style == 'ont') {
@@ -77,8 +82,8 @@ include { query ; filter_query} from './modules/database_filter'
 
 //workflows
 
-//ONT wf, with methylation:
-workflow ont {
+//ONT wf, with methylation calling from fast5:
+workflow ont_fastq {
     take: sample_channel
 
     main:
@@ -123,9 +128,48 @@ workflow ont {
     picard(align.out)
     fastqc(cat.out)
     
-
-
 }
+
+//ONT wf, from uBAM:
+workflow ont_bam {
+    take: sample_channel
+
+    main:
+    bam2fastq(sample_channel)
+    aligned_bam_bai_channel = align(bam2fastq.out.fastq_file)
+    
+    //SNV calling 
+    bcf_snv(aligned_bam_bai_channel)
+    filter_snvs(bcf_snv.out)
+
+    //SNV annotate 
+    annotate_snvs(filter_snvs.out.snv_filtered)
+
+    //phasing
+    bam_snv_channel = aligned_bam_bai_channel.join(annotate_snvs.out) //join
+    phase_it(bam_snv_channel)
+    phased_bam_bai_channel = bamindex(phase_it.out.phased_bam) //may have to join seperatly
+
+    //extract phased methylation
+    cpg_tools(phased_bam_bai_channel) //modkitbam??
+   
+    //SV calling
+    //join unless meth channel works
+    sniff(phased_bam_bai_channel)
+    pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
+    pytor(pytor_in_channel)
+    combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
+    combine(combine_channel)
+    run_vep(combine.out)
+    query(run_vep.out)
+    filter_query(query.out)
+
+    //QC
+    picard(align.out)
+    fastqc(bam2fastq.out)
+    
+}
+
 
 // PB workflow
 workflow pb_fastq {
@@ -203,9 +247,17 @@ workflow pb_bam {
 //main workflow
 workflow {
     if (params.style == 'ont') {
-        println('ONT workflow starting')
-        main:
-        ont(sample_channel)
+        if (params.file == 'bam'){
+            println('ONT workflow starting from BAM')
+            main:
+            ont_bam(sample_channel)
+        }
+
+        else {
+            println('ONT workflow starting from fastq')
+            main:
+            ont_fastq(sample_channel)
+        }       
 
     }
         

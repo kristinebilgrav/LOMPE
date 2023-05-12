@@ -3,7 +3,6 @@
 
 # LOng-read Multi-omics PipelinE
 
-** Under development **
 
 A pipeline for aligning long read pacbio or nanopore fastq files,
 calling SNVs, SVs and methylation, 
@@ -52,18 +51,20 @@ edit config to your needs
     --input < ONT: folder containing 'fastq_pass' with fastq files/ samplesheet with folder paths PB: samplesheet with paths to bam or fastq file / bam/fastq single file > 
     --output < pathto/output/folder> will generate pathto/output/folder/SampleID_out
     --style < ont OR pb>   
-    --file < 'fastq' or 'bam' needed for pb samples (methylation not called for fastq)>
+    --file < 'fastq' or 'bam' >
     -with-trace
 
 
-for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder
+
 
 the samplesheet.csv need to contain a header: SampleID,SamplePath where rows follow with sampleid,folder/orbam/path 
-for PB fastq files a path to the fastq file (gz) is expected
 
+for PB fastq files a path to the fastq file (gz) is expected, OR a bam file with methylation tags incorported
+
+for ONT samples, a folder called 'fast5_pass' is expected in the same directory as the 'fastq_pass' folder OR path to folder with ubams to remap to one
 
 Input:
-nanopore: folder containing fastq_pass and fast5_pass folders with fastq.gz / fast5 
+nanopore: folder containing fastq_pass and fast5_pass folders with fastq.gz / fast5  OR path to folder containing ubams 
 pacbio: folder containing fastq_pass with fastq.gz OR bam file
 
 Methylation annotation of bam:

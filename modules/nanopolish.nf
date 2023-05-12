@@ -9,7 +9,7 @@ process meth_index {
     publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
 
     input:
-    tuple val(SampleID), path(samplefolder), file(fastq_file)
+    tuple val(SampleID), val(samplefolder), file(fastq_file)
     
 
     output:
@@ -53,7 +53,7 @@ process call_meth {
     """
     export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
     nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads ${task.cpus} >  ${bam.baseName}.methylsites.tsv
-    scripts/calculate_methylation_frequency.py ${bam.baseName}.methylsites.tsv > ${bam.baseName}.methylfrequency.tsv
+    nanopolish/scripts/calculate_methylation_frequency.py ${bam.baseName}.methylsites.tsv > ${bam.baseName}.methylfrequency.tsv
     """
 
 }
