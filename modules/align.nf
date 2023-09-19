@@ -19,7 +19,7 @@ process cat {
     script:
 
     """ 
-    zcat ${fq_folder}/fastq*/*gz > ${SampleID}.fastq
+    zcat ${fq_folder}/*fastq* > ${SampleID}.fastq
     gzip ${SampleID}.fastq
     """
 }
@@ -57,6 +57,7 @@ process align {
     tuple val(SampleID), file( "${SampleID}.bam"), file( "${SampleID}.bam.bai")
 
     script: 
+    //add Y flag for making supplementary alignments soft clips?
     """
     minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} -y ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${SampleID}.bam && 
     samtools index -@ ${task.cpus} ${SampleID}.bam

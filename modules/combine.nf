@@ -35,11 +35,11 @@ process combine {
 
 
     output:
-    tuple val(SampleID),  file("${sniff_vcf.simpleName}.output.vcf")
+    tuple val(SampleID),  file("${sniff_vcf.simpleName}_combined.vcf")
 
     script:
     """
-    svdb --merge --vcf ${sniff_vcf} ${pytor} > ${sniff_vcf.simpleName}.output.vcf
+    svdb --merge --vcf ${sniff_vcf} ${pytor} > ${sniff_vcf.simpleName}_combined.vcf
     """
 
 }

@@ -15,6 +15,7 @@ process sniff {
 
 
     shell:
+    // update to sniffles2?
     """
     sniffles -m ${bam} -v ${bam.baseName}.sniffles.vcf -l 100 -t ${task.cpus} -s 3 --genotype --cluster 
 

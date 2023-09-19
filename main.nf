@@ -9,6 +9,11 @@ nextflow.enable.dsl = 2
 
 
 if ( params.input.endsWith('csv') ) { 
+    /*
+    if samplesheet - need to end with csv. 
+    treat differently if its pacbio (pb) bam file (do not need alignment)
+    otherwise SampleID and SamplePath saved to sample_channel
+    */
     if (params.style == 'pb' && params.file == 'bam') {
         Channel
             .fromPath(params.input)
@@ -52,6 +57,12 @@ else {
 
 
 // include modules
+/*
+treat differently if its bam file (do not need alignment)
+if ont ubam file; need to convert to fastq to align and do not need meth alignment
+if ont fastq need to incorporate methylation marks
+if pacbio want to analyze methylation marks using pb tools. 
+*/
 if (params.file != 'bam') {
     include {cat ; align} from './modules/align'
 }
@@ -61,7 +72,7 @@ if (params.file == 'bam' && params.style == 'ont') {
 }
 
 //include ont methylation annotation
-if (params.style == 'ont') {
+if (params.file != 'bam' && params.style == 'ont') {
     include { meth_index ; meth_polish ; call_meth} from './modules/nanopolish'
     include { bamindex as index_methbam } from './modules/phase'
 }    
@@ -69,7 +80,7 @@ else if ( params.style == 'pb'){
     include { cpg_tools } from './modules/cpg_tools'
     include { mdtag } from './modules/mdtag'
 }
-
+include { deepvar } from './modules/deepvariant'
 include { combine } from './modules/combine'
 include { sniff } from './modules/sniffles'
 include { run_vep ; annotate_snvs} from './modules/annotate'
@@ -80,9 +91,13 @@ include { picard } from './modules/picard'
 include { fastqc } from './modules/fastqc'
 include { query ; filter_query} from './modules/database_filter'
 
-//workflows
+/*
+workflows:
+two for PB and two for ONT, 
+depending on fastq or bam file input
+*/
 
-//ONT wf, with methylation calling from fast5:
+//ONT wf, fastq input with methylation calling from fast5:
 workflow ont_fastq {
     take: sample_channel
 
@@ -91,8 +106,9 @@ workflow ont_fastq {
     aligned_bam_bai_channel = align(cat.out.fastq_file)
     
     //SNV calling 
-    bcf_snv(aligned_bam_bai_channel)
-    filter_snvs(bcf_snv.out)
+    //bcf_snv(aligned_bam_bai_channel)
+    filter_snvs(bcf_snv.out) 
+    deepvar(aligned_bam_bai_channel) 
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out.snv_filtered)
@@ -139,8 +155,11 @@ workflow ont_bam {
     aligned_bam_bai_channel = align(bam2fastq.out.fastq_file)
     
     //SNV calling 
-    bcf_snv(aligned_bam_bai_channel)
-    filter_snvs(bcf_snv.out)
+    //bcf_snv(aligned_bam_bai_channel)
+    //filter_snvs(bcf_snv.out)
+    deepvar(aligned_bam_bai_channel)
+    filter_snvs(deepvar.out)
+    
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out.snv_filtered)
@@ -171,17 +190,18 @@ workflow ont_bam {
 }
 
 
-// PB workflow
+// PB workflow from fastq
 workflow pb_fastq {
     take: sample_channel
 
     main:
-
     aligned_bam_bai_channel = align(sample_channel)
     
     //SNV calling 
-    bcf_snv(aligned_bam_bai_channel)
-    filter_snvs(bcf_snv.out)
+    deepvar(aligned_bam_bai_channel)
+    filter_snvs(deepvar.out.deepvar_vcf)
+    //bcf_snv(mdtag.out)
+    //filter_snvs(bcf_snv.out)
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out.snv_filtered)
@@ -208,14 +228,18 @@ workflow pb_fastq {
     
 }
 
+//PB workflow from bam file with methylation marks
 workflow pb_bam {
     take: sample_channel
 
     main:
     //SNV calling 
     mdtag(sample_channel)
-    bcf_snv(mdtag.out)
-    filter_snvs(bcf_snv.out)
+    deepvar(aligned_bam_bai_channel)
+    filter_snvs(deepvar.out.deepvar_vcf)
+    //bcf_snv(mdtag.out)
+    //filter_snvs(bcf_snv.out)
+    
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out)
@@ -244,8 +268,9 @@ workflow pb_bam {
 
 }
 
-//main workflow
+//main workflow - choose workflow
 workflow {
+    //ont workflows
     if (params.style == 'ont') {
         if (params.file == 'bam'){
             println('ONT workflow starting from BAM')
@@ -260,7 +285,8 @@ workflow {
         }       
 
     }
-        
+    
+    //PB workflows
     else if (params.style == 'pb') {
         sample_channel.view() 
         if (params.file == 'bam'){
@@ -291,5 +317,5 @@ style : ${params.style}
 //completion handler
 workflow.onComplete {
     println "LOMPE complete at $workflow.complete"
-    log.info (workflow.success ? "Done! Lompe is filled with aligned and analyzed files at ${params.output}!" : "Fail. Check ${params.logfile}, maybe lompe fell apart :(")
+    log.info (workflow.success ? "Done! Lompe is filled with aligned and analyzed files at ${params.output}!" : "Fail. Check the trace file, maybe lompe fell apart :(")
 }

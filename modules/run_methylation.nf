@@ -6,8 +6,6 @@ analyze methylation using script
 
 process meth_find {
     publishDir params.output, mode: 'copy'
-    cpus 1
-    time '2h'
 
     input:
     path(methyl_chrs)
@@ -23,8 +21,6 @@ process meth_find {
 
 process cat_meth {
     publishDir params.output, mode: 'copy'
-    cpus 1
-    time '1h'
 
     input:
     path methylated_chr 

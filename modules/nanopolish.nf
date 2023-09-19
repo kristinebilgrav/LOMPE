@@ -35,6 +35,7 @@ process meth_polish {
 
     script:
     """
+    export HDF5_PLUGIN_PATH=/usr/local/hdf5/lib/plugin
     nanopolish call-methylation -r ${fastq_file} -b ${bam} -g ${params.ref} --threads ${task.cpus} --methylation cpg --modbam-output-name ${bam.baseName}.methyl.bam
     """
 }

@@ -34,11 +34,11 @@ process filter_query {
     tuple val(SampleID), file(queried)
 
     output:
-    tuple val(SampleID), file("${queried.baseName}.filtered.vcf"), emit: filtered
+    tuple val(SampleID), file("${queried.baseName}_filtered.vcf"), emit: filtered
 
     script:
     """
-    python ${params.LOMPE_home}/scripts/filter_rank.py ${queried} ${queried.baseName}.filtered.vcf
+    python ${params.LOMPE_home}/scripts/filter_rank.py ${queried} ${queried.baseName}_filtered.vcf
     """
     
 }

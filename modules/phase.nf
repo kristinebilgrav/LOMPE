@@ -13,17 +13,17 @@ process phase_it {
 
 
     output:
-    tuple val(SampleID),  file("${bam.baseName}.phased.vcf.gz"), emit: phased_vcf
-    tuple val(SampleID), file("${bam.baseName}.phased.vcf.gz.tbi"), emit: phased_vcf_tbi
+    tuple val(SampleID),  file("${bam.baseName}_snvs_phased.vcf.gz"), emit: phased_vcf
+    tuple val(SampleID), file("${bam.baseName}_snvs_phased.vcf.gz.tbi"), emit: phased_vcf_tbi
     tuple val(SampleID), file("${bam.baseName}.haplotagged.bam"), emit: phased_bam
 
 
     script:
     """
-    whatshap phase --tag=PS --ignore-read-groups -o ${bam.baseName}.phased.vcf --reference ${params.ref} ${annotated_snv_vcf} ${bam} 
-    bgzip ${bam.baseName}.phased.vcf
-    tabix ${bam.baseName}.phased.vcf.gz
-    whatshap haplotag -o ${bam.baseName}.haplotagged.bam --reference ${params.ref} ${bam.baseName}.phased.vcf.gz  ${bam} --output-threads=${task.cpus}
+    whatshap phase --tag=PS --ignore-read-groups -o ${bam.baseName}_snvs_phased.vcf --reference ${params.ref} ${annotated_snv_vcf} ${bam} 
+    bgzip ${bam.baseName}_snvs_phased.vcf
+    tabix ${bam.baseName}_snvs_phased.vcf.gz
+    whatshap haplotag -o ${bam.baseName}.haplotagged.bam --reference ${params.ref} ${bam.baseName}_snvs_phased.vcf.gz  ${bam} --output-threads=${task.cpus}
     """
     
 }

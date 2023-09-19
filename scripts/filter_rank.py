@@ -17,7 +17,7 @@ for line in open(sys.argv[1]):
 
     # SV length
     
-    svlen = int(line.split('SVLEN=')[-1].split(';')[0])
+    svlen = abs(int(line.split('SVLEN=')[-1].split(';')[0]))
     if svlen > 1000:
         length = 'pass'
     else:
