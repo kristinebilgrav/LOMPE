@@ -13,7 +13,7 @@ process deepvar {
     
 
     output:
-    tuple val(SampleID), file("${SampleID}_deepvariant.vcf"), emit: deepvar_vcf
+    tuple val(SampleID), file("${SampleID}_deepvariant.vcf.gz"), emit: deepvar_vcf
     tuple val(SampleID), file("${SampleID}_deepvariant_g.vcf.gz"), emit: deepvar_gvcf
 
 

@@ -107,8 +107,8 @@ workflow ont_fastq {
     
     //SNV calling 
     //bcf_snv(aligned_bam_bai_channel)
-    filter_snvs(bcf_snv.out) 
     deepvar(aligned_bam_bai_channel) 
+    filter_snvs(deepvar.out.deepvar_vcf) 
 
     //SNV annotate 
     annotate_snvs(filter_snvs.out.snv_filtered)
@@ -132,7 +132,7 @@ workflow ont_fastq {
     //SV calling
     //join unless meth channel works
     sniff(methylation_bam_bai_channel)
-    pytor_in_channel = methylation_bam_bai_channel.join(bcf_snv.out)//join
+    pytor_in_channel = methylation_bam_bai_channel.join(deepvar.out.deepvar_vcf)//join
     pytor(pytor_in_channel)
     combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
     combine(combine_channel)
@@ -158,7 +158,7 @@ workflow ont_bam {
     //bcf_snv(aligned_bam_bai_channel)
     //filter_snvs(bcf_snv.out)
     deepvar(aligned_bam_bai_channel)
-    filter_snvs(deepvar.out)
+    filter_snvs(deepvar.out.deepvar_vcf)
     
 
     //SNV annotate 
@@ -175,7 +175,7 @@ workflow ont_bam {
     //SV calling
     //join unless meth channel works
     sniff(phased_bam_bai_channel)
-    pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
+    pytor_in_channel = phased_bam_bai_channel.join(deepvar.out.deepvar_vcf)//join
     pytor(pytor_in_channel)
     combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
     combine(combine_channel)
@@ -254,7 +254,7 @@ workflow pb_bam {
 
     //SV calling
     sniff(phased_bam_bai_channel)
-    pytor_in_channel = phased_bam_bai_channel.join(bcf_snv.out)//join
+    pytor_in_channel = phased_bam_bai_channel.join(deepvar.out.deepvar_vcf)//join
     pytor(pytor_in_channel)
     combine_channel = sniff.out.join(pytor.out.pytor_vcf) //join
     combine(combine_channel )

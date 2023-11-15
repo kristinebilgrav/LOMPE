@@ -9,7 +9,7 @@ calling SNVs, SVs and methylation,
 with phasing and filtering. 
 
 
-Workflow: #image
+Workflow: #image / clean
 fastq -> bam (minimap2)
 snv calling and annotation (bcftools)
 phasing and haplotagging of bam file (whatshap)

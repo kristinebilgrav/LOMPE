@@ -59,7 +59,7 @@ process align {
     script: 
     //add Y flag for making supplementary alignments soft clips?
     """
-    minimap2 -R '@RG\\tID:foo\\tSM:bar' -a -t ${task.cpus} --MD -x map-${params.style} -y ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${SampleID}.bam && 
+    minimap2 -R '@RG\\tID:${SampleID}\\tSM:${SampleID}' -a -t ${task.cpus} --MD -x map-${params.style} -y ${params.ref} ${fastq} | samtools view -Sbh - | samtools sort -m 4G -@16 - > ${SampleID}.bam && 
     samtools index -@ ${task.cpus} ${SampleID}.bam
     """
 }
