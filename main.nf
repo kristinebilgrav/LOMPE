@@ -1,101 +1,65 @@
 #!/usr/bin/env nextflow
 
 /*
-main pipeline script
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    kristinebilgrav/LOMPE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Github : https://github.com/kristinebilgrav/LOMPE  
+----------------------------------------------------------------------------------------
 */
 
 nextflow.enable.dsl = 2
 
-
-
-if ( params.input.endsWith('csv') ) { 
-    /*
-    if samplesheet - need to end with csv. 
-    treat differently if its pacbio (pb) bam file (do not need alignment)
-    otherwise SampleID and SamplePath saved to sample_channel
-    */
-    if (params.style == 'pb' && params.file == 'bam') {
-        Channel
-            .fromPath(params.input)
-            .splitCsv(header: true)
-            .map{ row ->  tuple(row.SampleID, file(row.SamplePath), file(row.SamplePath.tokenize('.')[0]+'*.bai'))  }
-            .set{sample_channel}
-    }
-    else {
-        Channel
-        .fromPath(params.input)
-        .splitCsv(header: true)
-        .map{ row ->  tuple(row.SampleID, file(row.SamplePath))  }
-        .set{sample_channel}
-    }
-    
-}
-
-else if (params.input.endsWith('bam')) {
-    String path = params.input 
-    SampleID = path.tokenize('/')[-1].tokenize('.')[0]
-    Channel
-        .fromPath(params.input) //bai file
-        .map{tuple(SampleID, file(params.input), file(params.input.tokenize('.')[0]+'*.bai') )}
-        .set{sample_channel}
-        //begin at annotion
-}
-
-else if (new File(params.input).exists()){
-
-    String path = params.input 
-    SampleID = path.tokenize('/')[-1]
-
-    Channel
-        .fromPath(params.input)
-        .map{tuple(SampleID, file(params.input))}
-        .set{sample_channel}
-}
-else {
-    println('input error, takes csv samplesheet, bam file or folder with gzipped fastq files')
-}
-
-
-// include modules
 /*
-treat differently if its bam file (do not need alignment)
-if ont ubam file; need to convert to fastq to align and do not need meth alignment
-if ont fastq need to incorporate methylation marks
-if pacbio want to analyze methylation marks using pb tools. 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    GENOME PARAMETER VALUES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-if (params.file != 'bam') {
-    include {cat ; align} from './modules/align'
+
+params.fasta = WorkflowMain.getGenomeAttribute(params, 'fasta')
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    VALIDATE & PRINT PARAMETER SUMMARY
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+WorkflowMain.initialise(workflow, params, log)
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    NAMED WORKFLOW FOR PIPELINE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+include { LOMPE } from './workflows/lompe'
+
+
+// WORKFLOW: Run main nf-core/raredisease analysis pipeline
+workflow KRISTINEBILGRAV_LOMPE {
+    LOMPE ()
 }
 
-if (params.file == 'bam' && params.style == 'ont') {
-    include { bam2fastq ; align } from '.modules/align'
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RUN ALL WORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+//
+// WORKFLOW: Execute a single named workflow for the pipeline
+// See: https://github.com/nf-core/rnaseq/issues/619
+//
+workflow {
+    KRISTINEBILGRAV_LOMPE ()
 }
 
-//include ont methylation annotation
-if (params.file != 'bam' && params.style == 'ont') {
-    include { meth_index ; meth_polish ; call_meth} from './modules/nanopolish'
-    include { bamindex as index_methbam } from './modules/phase'
-}    
-else if ( params.style == 'pb'){
-    include { cpg_tools } from './modules/cpg_tools'
-    include { mdtag } from './modules/mdtag'
-}
-include { deepvar } from './modules/deepvariant'
-include { combine } from './modules/combine'
-include { sniff } from './modules/sniffles'
-include { run_vep ; annotate_snvs} from './modules/annotate'
-include { phase_it ; bamindex } from './modules/phase'
-include { bcf_snv ; filter_snvs } from './modules/bcftools'
-include { pytor } from './modules/pytor'
-include { picard } from './modules/picard'
-include { fastqc } from './modules/fastqc'
-include { query ; filter_query} from './modules/database_filter'
+
 
 /*
 workflows:
 two for PB and two for ONT, 
 depending on fastq or bam file input
-*/
+
 
 //ONT wf, fastq input with methylation calling from fast5:
 workflow ont_fastq {
@@ -268,54 +232,6 @@ workflow pb_bam {
 
 }
 
-//main workflow - choose workflow
-workflow {
-    //ont workflows
-    if (params.style == 'ont') {
-        if (params.file == 'bam'){
-            println('ONT workflow starting from BAM')
-            main:
-            ont_bam(sample_channel)
-        }
 
-        else {
-            println('ONT workflow starting from fastq')
-            main:
-            ont_fastq(sample_channel)
-        }       
+*/
 
-    }
-    
-    //PB workflows
-    else if (params.style == 'pb') {
-        sample_channel.view() 
-        if (params.file == 'bam'){
-            println('PB workflow starting from BAM')
-            main:
-            pb_bam(sample_channel)
-        }
-
-        else {
-            println('PB workflow starting from fastq')
-            main:
-            pb_fastq(sample_channel)
-        }
-    }
-   
-}
-
-
-log.info """\
-LOng-read Multiomic PipelinE
-----------------------------
-input : ${params.input}
-output :  ${params.output}
-style : ${params.style}
-
-"""
-
-//completion handler
-workflow.onComplete {
-    println "LOMPE complete at $workflow.complete"
-    log.info (workflow.success ? "Done! Lompe is filled with aligned and analyzed files at ${params.output}!" : "Fail. Check the trace file, maybe lompe fell apart :(")
-}

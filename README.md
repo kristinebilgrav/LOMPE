@@ -8,21 +8,42 @@ A pipeline for aligning long read pacbio or nanopore fastq files,
 calling SNVs, SVs and methylation, 
 with phasing and filtering. 
 
+QC: 
+- Picard
+- fastQC
+
+Alignment:
+- minimap2
+
+SNV calling:
+- deepvariant 
+- bcftools (for lower quality data)
+
+SV calling:
+- Sniffles v1
+
+CNV calling:
+- CNV pythor
+
+Expansion repeats:
+- TRGT (https://github.com/PacificBiosciences/trgt)
+
+Phasing:
+- WhatsHap
+
+Methylation:
+- PB: pb-cpg-tools
+- ONT: specify pore; for < R10 nanopolish, R10
+
 
 Workflow: #image / clean
 fastq -> bam (minimap2)
 snv calling and annotation (bcftools)
 phasing and haplotagging of bam file (whatshap)
 methylation calling (ont) (nanopolish)
-sv calling and cnv calling (sniffles1 and CNVpytor)
 filtering SVs | extraction of methylation info (SVDB | nanopolsih/cpgtools)
 
 
-minimap2, samtools, sniffles 1, BCFtools, CNVpytor, nanopolish, VEP, pb-cpg-tools, custom database annotation and filtering of variants
-
-
-QC: 
-FastQC, picard
 
 # Install
 
@@ -47,13 +68,18 @@ git clone < repo >
 edit config to your needs
 
 # RUN
-    nextflow run main.nf -c < config > 
-    --input < ONT: folder containing 'fastq_pass' with fastq files/ samplesheet with folder paths PB: samplesheet with paths to bam or fastq file / bam/fastq single file > 
+    nextflow run kristinebilgrav/lompe 
+    
+    REQUIRED:
+    -c < config > 
+    --input < ONT: folder containing 'fastq_pass' with fastq files/ samplesheet with folder paths PB: samplesheet with paths to bam or fastq file  > 
     --output < pathto/output/folder> will generate pathto/output/folder/SampleID_out
     --style < ont OR pb>   
-    --file < 'fastq' or 'bam' >
-    -with-trace
+    --file < 'fastq' OR 'bam' OR 'ubam'>
 
+    OPTIONAL:
+    -with-trace < creates log file >
+    --bcftools < if for some reason want to use bcftools instead of deepvariant >
 
 
 
