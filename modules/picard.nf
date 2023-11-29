@@ -5,6 +5,7 @@ picard
 */
 
 process picard {
+    tag "${params.style}:${SampleID}:picard"
     publishDir "${params.output}/${SampleID}_out/", mode: 'copy'
     errorStrategy 'ignore'
 

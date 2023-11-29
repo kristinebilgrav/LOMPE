@@ -15,6 +15,7 @@ include {annotate_snvs} from '../modules/annotate'
 
 
 
+
 // WORKFLOW
 
 workflow snv_calling {
@@ -23,10 +24,10 @@ workflow snv_calling {
     main:
     deepvar(aligned_bam_bai_channel) 
     //bcf_snv(aligned_bam_bai_channel)
-    filter_snvs(deepvar.out.deepvar_vcf) 
+    //filter_snvs(bcf_snv.out) 
 
     //SNV annotate 
-    annotate_snvs(filter_snvs.out.snv_filtered)
+    annotate_snvs(deepvar.out.deepvar_vcf)
     bam_snv_channel = aligned_bam_bai_channel.join(annotate_snvs.out) 
 
     emit:

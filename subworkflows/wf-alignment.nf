@@ -11,27 +11,27 @@ if (params.style == 'ont' && params.file == 'fastq') {
 }
 
 if (params.file == 'ubam') {
-    include { bam2fastq ; align } from '../modules/align'
+    include { bam2fastq  } from '../modules/align'
 }
 
 include {align} from '../modules/align'
 
 // WORKFLOW
 
-worfklow alignment {
+workflow alignment {
     take:
     sample_channel
 
     main: 
     if (params.style == 'ont' && params.file == 'fastq') {
-        fastq_ch = cat(sample_channel).out()
+        fastq_ch = cat(sample_channel)
     }
 
     else if (params.style == 'ont' && params.file == 'ubam') {
-        fastq_ch= bam2fastq(sample_channel).out()
+        fastq_ch= bam2fastq(sample_channel)
 
     }
-    else{
+    else {
         fastq_ch = sample_channel
     }
 

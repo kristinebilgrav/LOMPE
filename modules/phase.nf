@@ -20,7 +20,7 @@ process phase_it {
 
     script:
     """
-    whatshap phase --tag=PS --ignore-read-groups -o ${bam.baseName}_snvs_phased.vcf --reference ${params.ref} ${annotated_snv_vcf} ${bam} 
+    whatshap phase --tag=PS -o ${bam.baseName}_snvs_phased.vcf --reference ${params.ref} ${annotated_snv_vcf} ${bam} 
     bgzip ${bam.baseName}_snvs_phased.vcf
     tabix ${bam.baseName}_snvs_phased.vcf.gz
     whatshap haplotag -o ${bam.baseName}.haplotagged.bam --reference ${params.ref} ${bam.baseName}_snvs_phased.vcf.gz  ${bam} --output-threads=${task.cpus}

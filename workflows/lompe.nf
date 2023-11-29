@@ -4,6 +4,7 @@
 LOMPE 
 */
 
+nextflow.enable.dsl = 2
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     VALIDATE INPUTS
@@ -11,35 +12,16 @@ LOMPE
 */
 
 
-def checkPathParamList = [ params.input,
-                           params.ref
-                         ]
 
-for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
-
-if (params.style != 'pb' or 'ont' ) { exit 1, 'style must be either "pb" or "ont" '}
-if (params.file != 'bam' or 'fastq' or 'ubam') { exit 1, 'file must be either bam, ubam or fastq'}
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    CHECK MANDATORY PARAMETERS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-def mandatoryParams = [
-    "input",
-    "ref",
-    "file",
-    "output"
-
-]
-
+//if (params.style != 'pb' ||  'ont' ) { exit 1, 'style must be either "pb" or "ont" '}
+//if (params.file != 'bam' ||  'fastq' || 'ubam') { exit 1, 'file must be either bam, ubam or fastq'}
 if ( params.input.endsWith('csv') ) { 
     /*
     if samplesheet - need to end with csv. 
     treat differently if its pacbio (pb) bam file (do not need alignment)
-    otherwise SampleID and SamplePath saved to sample_channel
+    otherwise SampleID and SamplePath saved to sample_channel or 
     */
-    if (params.file == 'bam' or 'ubam') {
+    if (params.file == 'bam' ||  'ubam' ) {
         Channel
             .fromPath(params.input)
             .splitCsv(header: true)
@@ -57,10 +39,24 @@ if ( params.input.endsWith('csv') ) {
 }
 
 
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CHECK MANDATORY PARAMETERS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+def mandatoryParams = [
+    "input",
+    "style",
+    "ref",
+    "file",
+    "output"
+]
+
+
 def missingParamsCount = 0
-for (param in mandatoryParams.unique()) {
-    if (params[param] == null) {
-        println("params." + param + " not set.")
+for (p in mandatoryParams.unique()) {
+    if (params[p] == null) {
+        println("params." + p + " not set.")
         missingParamsCount += 1
     }
 }
@@ -91,8 +87,7 @@ else if ( params.style == 'pb'){
 }
 
 include { combine } from '../modules/combine'
-include { sniff } from '../modules/sniffles'
-include { run_vep ; annotate_snvs} from '../modules/annotate'
+
 
 
 include { pytor } from '../modules/pytor'
@@ -105,6 +100,7 @@ include { query ; filter_query} from '../modules/database_filter'
 include { alignment } from '../subworkflows/wf-alignment'
 include { snv_calling } from '../subworkflows/wf-SNV'
 include { phasing } from '../subworkflows/wf-phase'
+include { sv_calling } from '../subworkflows/wf-SVs'
 
 
 /*
@@ -118,7 +114,8 @@ workflow LOMPE {
     if (params.file == 'bam'){
         println('Starting from BAM, only variant calling')
         main:
-        bam(sample_channel)
+        snv_calling(sample_channel)
+        sv_calling(sample_channel)
     }
 
     else {
@@ -127,7 +124,7 @@ workflow LOMPE {
         alignment(sample_channel)
         snv_calling(alignment.out)
         phasing(snv_calling.out)
-        //sv_calling(phasing.out)
+        sv_calling(phasing.out)
         //methylation_calling()
     }       
 
@@ -156,6 +153,6 @@ workflow.onComplete {
 
 
 
-else if (params.style == 'pb') { }
+//else if (params.style == 'pb') { }
 
-    if (params.style == 'ont') {}
+//if (params.style == 'ont') {}
